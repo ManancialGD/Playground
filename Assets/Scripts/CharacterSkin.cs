@@ -5,11 +5,10 @@ public class CharacterSkin : MonoBehaviour
 {
     [SerializeField] private Transform skinTransform;
     [SerializeField] private Transform orientation;
+    [SerializeField] private Rigidbody rb;
     [SerializeField] private Animator anim;
     [SerializeField] private InputActionReference moveAction;
     [SerializeField, Range(0.1f, 30)] private float slerpTime;
-
-    private Vector2 moveInput;
 
     public void UpdateRotation()
     {
@@ -18,36 +17,15 @@ public class CharacterSkin : MonoBehaviour
 
     public void UpdateAnimation()
     {
-        Rigidbody rb = GetComponent<Rigidbody>();
-
         float forwardValue = Vector3.Dot(rb.linearVelocity, orientation.forward);
         float horizontalValue = Vector3.Dot(rb.linearVelocity, orientation.right);
 
         anim.SetFloat("xInput", horizontalValue);
         anim.SetFloat("yInput", forwardValue);
     }
-
-    private void OnEnable()
+    private void OnValidate()
     {
-        moveAction.action.performed += OnMovementAction;
-        moveAction.action.canceled += OnMovementAction;
-    }
-    private void OnDisable()
-    {
-        moveAction.action.performed -= OnMovementAction;
-        moveAction.action.canceled -= OnMovementAction;
-    }
-
-    private void OnMovementAction(InputAction.CallbackContext context)
-    {
-        Vector2 v = context.ReadValue<Vector2>();
-
-        if (v != null) moveInput = v;
-    }
-
-    public void OnValidate()
-    {
-        if (anim == null)
-            anim = GetComponentInChildren<Animator>();
+        if(rb == null) rb = GetComponent<Rigidbody>();
+        if (anim == null) anim = GetComponentInChildren<Animator>();
     }
 }

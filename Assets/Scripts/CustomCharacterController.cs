@@ -3,12 +3,14 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(CharacterMovement), typeof(CharacterView), typeof(CharacterSkin))]
+[RequireComponent(typeof(CharacterMovement), typeof(CharacterView)),
+RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
 public class CustomCharacterController : MonoBehaviour
 {
     private CharacterMovement characterMovement;
     private CharacterView characterView;
     private CharacterSkin characterSkin;
+    private CharacterShooter characterShooter;
 
     public CharacterStates CharacterState { get; private set; }
 
@@ -31,6 +33,7 @@ public class CustomCharacterController : MonoBehaviour
         characterView.UpdateView();
         characterSkin.UpdateRotation();
         characterSkin.UpdateAnimation();
+        characterShooter.UpdateAim();
     }
 
     private void FixedUpdate()
@@ -45,9 +48,12 @@ public class CustomCharacterController : MonoBehaviour
 
         if (characterView == null)
             characterView = GetComponent<CharacterView>();
-        
+
         if (characterSkin == null)
             characterSkin = GetComponent<CharacterSkin>();
+
+        if (characterShooter == null)
+            characterShooter = GetComponent<CharacterShooter>();
     }
 
     private void OnEnable()
