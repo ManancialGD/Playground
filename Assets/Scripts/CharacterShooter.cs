@@ -1,9 +1,13 @@
+using UnityEditor.IMGUI.Controls;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CharacterShooter : MonoBehaviour
 {
     [SerializeField] private Transform aimTarget;
     [SerializeField] private Transform cam;
+    [SerializeField] private InputActionReference shootAction;
+    [SerializeField] private Transform gunTip;
 
     [SerializeField] private float maxDistance = 150f;
 
@@ -15,5 +19,20 @@ public class CharacterShooter : MonoBehaviour
         }
         else
             aimTarget.position = cam.forward * maxDistance;
+    }
+
+    private void OnEnable()
+    {
+        shootAction.action.performed += OnShootAction;
+    }
+
+    private void OnDisable()
+    {
+        shootAction.action.performed -= OnShootAction;
+    }
+
+    private void OnShootAction(InputAction.CallbackContext context)
+    {
+        
     }
 }

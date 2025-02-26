@@ -36,7 +36,7 @@
                     "name": "Interact",
                     "type": "Button",
                     "id": "852140f2-7766-474d-8707-702459ba45f3",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "Hold",
                     "initialStateCheck": false
@@ -90,6 +90,15 @@
                     "name": "Aim",
                     "type": "Button",
                     "id": "a98b9f57-3ead-4bb2-812c-ccec95991309",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shoot",
+                    "type": "Button",
+                    "id": "fea42e9d-8e8a-4e0d-b87f-c5e1798732e5",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -501,6 +510,17 @@
                     "processors": "",
                     "groups": ";Gamepad",
                     "action": "Aim",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "364974ac-d109-4126-b0f3-4e461fdc876e",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Shoot",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
