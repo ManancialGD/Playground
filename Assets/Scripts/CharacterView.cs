@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 
 public class CharacterView : MonoBehaviour
 {
-    [SerializeField] private CinemachineCamera cam;
     [SerializeField] private Transform cameraTarget;
     [SerializeField] private Transform orientation;
     [SerializeField] private InputActionReference lookAction;
