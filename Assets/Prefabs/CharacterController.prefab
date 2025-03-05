@@ -480,7 +480,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d84b2814d7b68c4bbc4193a9e4c3f93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cam: {fileID: 4845050344337525278}
   cameraTarget: {fileID: 6129486102842373097}
   orientation: {fileID: 629598668345729025}
   lookAction: {fileID: -5630151704836100654, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -537,9 +536,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   aimTarget: {fileID: 5558961206428353589}
   cam: {fileID: 7246638549144090123}
-  shootAction: {fileID: 0}
+  shootAction: {fileID: -6954097903470975531, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   gunTip: {fileID: 3993213551888468343}
-  orientation: {fileID: 0}
+  orientation: {fileID: 629598668345729025}
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -547,6 +546,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   maxDistance: 150
+  cameraSafeDistance: 2
   lerpTime: 15
 --- !u!136 &3471329188198148036
 CapsuleCollider:
@@ -1050,7 +1050,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5826700428661753741
 Transform:
   m_ObjectHideFlags: 0
