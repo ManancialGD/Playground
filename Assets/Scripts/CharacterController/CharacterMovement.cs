@@ -8,7 +8,8 @@ using UnityEngine.Scripting.APIUpdating;
 public class CharacterMovement : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private AnimationCurve accelerationCurve;
+    [SerializeField] private AnimationCurve walkCurve;
+    [SerializeField] private AnimationCurve runCurve;
     [SerializeField] private AnimationCurve deaccelerationCurve;
 
     [Header("References")]
@@ -31,7 +32,21 @@ public class CharacterMovement : MonoBehaviour
         OnValidate();
     }
 
-    public void UpdateMovement()
+    public void UpdateWalkMovement()
+    {
+        UpdateMovement(walkCurve);
+    }
+
+    public void UpdateRunMovement()
+    {
+        UpdateMovement(runCurve);
+    }
+    public void UpdateAimMovement()
+    {
+        UpdateMovement(walkCurve, 0.75f);
+    }
+
+    private void UpdateMovement(AnimationCurve movementCurve, float velMultiplier = 1)
     {
         if (Mathf.Abs(movementInput.x) > 1e-5f || Mathf.Abs(movementInput.y) > 1e-5f)
         {
@@ -41,7 +56,8 @@ public class CharacterMovement : MonoBehaviour
             moveDir = flatForward * movementInput.y + flatRight * movementInput.x;
 
             Vector3 horizontalVelocity = new(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            Vector3 force = moveDir.normalized * accelerationCurve.Evaluate(horizontalVelocity.magnitude);
+            Vector3 force = moveDir.normalized *
+                                movementCurve.Evaluate(horizontalVelocity.magnitude) * velMultiplier;
 
             rb.AddForce(force - horizontalVelocity, ForceMode.Force);
         }

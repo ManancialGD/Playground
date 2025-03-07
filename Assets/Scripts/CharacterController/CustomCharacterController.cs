@@ -15,7 +15,10 @@ public class CustomCharacterController : MonoBehaviour
     public CharacterStates CharacterState { get; private set; }
 
     [SerializeField] private InputActionReference aimAction;
+    [SerializeField] private InputActionReference runAction;
     [SerializeField] private CinemachineCamera aimCamera;
+
+    private bool runningInput = false;
 
     public void Start()
     {
@@ -38,7 +41,12 @@ public class CustomCharacterController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        characterMovement.UpdateMovement();
+        if (CharacterState == CharacterStates.Aimming)
+            characterMovement.UpdateAimMovement();
+        else if (CharacterState == CharacterStates.Defaulft)
+            characterMovement.UpdateWalkMovement();
+        else if (CharacterState == CharacterStates.Running)
+            characterMovement.UpdateRunMovement();
     }
 
     private void OnValidate()
@@ -63,6 +71,11 @@ public class CustomCharacterController : MonoBehaviour
             aimAction.action.performed += OnAimPerformed;
             aimAction.action.canceled += OnAimCanceled;
         }
+        if (runAction != null)
+        {
+            runAction.action.performed += OnRunPerformed;
+            runAction.action.canceled += OnRunCanceled;
+        }
     }
 
     private void OnDisable()
@@ -71,6 +84,11 @@ public class CustomCharacterController : MonoBehaviour
         {
             aimAction.action.performed -= OnAimPerformed;
             aimAction.action.canceled -= OnAimCanceled;
+        }
+        if (runAction != null)
+        {
+            runAction.action.performed -= OnRunPerformed;
+            runAction.action.canceled -= OnRunCanceled;
         }
     }
 
@@ -83,8 +101,21 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnAimCanceled(InputAction.CallbackContext context)
     {
-        CharacterState = CharacterStates.Defaulft;
+        CharacterState = runningInput ? CharacterStates.Running : CharacterStates.Defaulft;
         if (aimCamera != null)
             aimCamera.gameObject.SetActive(false);
+    }
+    private void OnRunPerformed(InputAction.CallbackContext context)
+    {
+        runningInput = true;
+        if (CharacterState == CharacterStates.Aimming)
+            aimCamera.gameObject.SetActive(false);
+        CharacterState = CharacterStates.Running;
+    }
+
+    private void OnRunCanceled(InputAction.CallbackContext context)
+    {
+        runningInput = false;
+        CharacterState = CharacterStates.Defaulft;
     }
 }

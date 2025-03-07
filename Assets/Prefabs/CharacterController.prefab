@@ -407,7 +407,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b1d6fcbabadca942b04cd145c1fe649, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  accelerationCurve:
+  walkCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -422,6 +422,39 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 2.0625093
       value: 8.986626
+      inSlope: -0.41306275
+      outSlope: -0.41306275
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 10.040161
+      value: 0
+      inSlope: -2.3799305
+      outSlope: -2.3799305
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.045154788
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  runCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.026935577
+      value: 24
+      inSlope: -0.03485412
+      outSlope: -0.03485412
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.07712767
+    - serializedVersion: 3
+      time: 2.0625093
+      value: 12
       inSlope: -0.41306275
       outSlope: -0.41306275
       tangentMode: 0
@@ -503,6 +536,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimAction: {fileID: 410532493584127312, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  runAction: {fileID: 0}
   aimCamera: {fileID: 2236832419043895274}
 --- !u!114 &4377719770554587352
 MonoBehaviour:
@@ -534,6 +568,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54a1b10ab0bf8be41843ab7894e2285d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxDistance: 150
+  cameraSafeDistance: 2
+  lerpTime: 15
+  shootRate: 0.25
+  bulletSpeed: 250
   aimTarget: {fileID: 5558961206428353589}
   cam: {fileID: 7246638549144090123}
   shootAction: {fileID: -6954097903470975531, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -545,9 +584,7 @@ MonoBehaviour:
   enemiesLayer:
     serializedVersion: 2
     m_Bits: 128
-  maxDistance: 150
-  cameraSafeDistance: 2
-  lerpTime: 15
+  bulletPool: {fileID: 0}
 --- !u!136 &3471329188198148036
 CapsuleCollider:
   m_ObjectHideFlags: 0
