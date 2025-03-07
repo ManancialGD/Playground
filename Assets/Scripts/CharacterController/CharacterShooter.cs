@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Unity.Cinemachine;
 using UnityEditor.IMGUI.Controls;
@@ -25,6 +26,7 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private ObjectPool bulletPool;
 
     private bool canShoot = true;
+    public event Action ShootEvent;
     private Coroutine shootCoroutine;
 
     private void Awake()
@@ -32,6 +34,7 @@ public class CharacterShooter : MonoBehaviour
         if (cam == null)
             cam = FindAnyObjectByType<CinemachineBrain>().transform;
     }
+
     public void UpdateAim()
     {
         if (Physics.Raycast(cam.position, cam.forward * cameraSafeDistance, out RaycastHit hit, maxDistance))
@@ -103,6 +106,7 @@ public class CharacterShooter : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.AddForce((aimTarget.position - gunTip.position).normalized * bulletSpeed, ForceMode.Impulse);
+            ShootEvent?.Invoke();
         }
         else
         {

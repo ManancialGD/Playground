@@ -39,6 +39,11 @@ namespace Localization
 
         public string GetTranslation(string key)
         {
+            if (translationDict == null)
+            {
+                BuildTranslationDictionary();
+            }
+
             if (translationDict.TryGetValue(key, out var entry))
             {
                 return entry.GetTranslation(currentLanguage);

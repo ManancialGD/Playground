@@ -20,9 +20,11 @@ public class CharacterView : MonoBehaviour
     [SerializeField] private float maxAngleDown = 15;
     [SerializeField] private bool invertMouseY = false;
     [SerializeField] private CustomCharacterController characterController;
+    [SerializeField] private CharacterShooter characterShooter;
+    [SerializeField] private CinemachineImpulseSource impulseSource;
+    [SerializeField, Range(0, .15f)] private float impulseForce = .05f;
 
     private Vector2 lookInput;
-
 
     private void Awake()
     {
@@ -67,12 +69,14 @@ public class CharacterView : MonoBehaviour
     {
         lookAction.action.performed += OnLookAction;
         lookAction.action.canceled += OnLookAction;
+        characterShooter.ShootEvent += OnShootEvent;
     }
 
     private void OnDisable()
     {
         lookAction.action.performed -= OnLookAction;
         lookAction.action.canceled -= OnLookAction;
+        characterShooter.ShootEvent -= OnShootEvent;
     }
 
     private void OnLookAction(InputAction.CallbackContext context)
@@ -80,9 +84,19 @@ public class CharacterView : MonoBehaviour
         lookInput = context.ReadValue<Vector2>();
     }
 
+    private void OnShootEvent()
+    {
+        impulseSource.DefaultVelocity = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 0));
+        impulseSource.GenerateImpulse(impulseForce);
+    }
+
     private void OnValidate()
     {
         if (characterController == null)
             characterController = GetComponent<CustomCharacterController>();
+        if (characterShooter == null)
+            characterShooter = GetComponent<CharacterShooter>();
+        if (impulseSource == null)
+            impulseSource = GetComponent<CinemachineImpulseSource>();
     }
 }
