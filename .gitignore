@@ -76,3 +76,7 @@ crashlytics-build.properties
 
 # TMP font
 /[Aa]ssets/[Tt]extMesh Pro
+
+# Textures, Sounds
+/[Aa]ssets/[Tt]extures/*
+/[Aa]ssets/[Ss]ounds/*
