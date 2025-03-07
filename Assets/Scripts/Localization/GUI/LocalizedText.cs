@@ -34,7 +34,10 @@ namespace Localization.GUI
 
         private void UpdateText()
         {
-            textComponent.text = localizationData.GetTranslation(translationKey);
+            if (localizationData != null && textComponent != null)
+            {
+                textComponent.text = localizationData.GetTranslation(translationKey);
+            }
         }
     }
 }

@@ -21,3 +21,11 @@ MonoBehaviour:
       text: Exemplo
     - language: Japanese
       text: "\u4F8B"
+  - key: testTitle
+    translations:
+    - language: English
+      text: Localization
+    - language: Portuguese
+      text: "Localiza\xE7\xE3o"
+    - language: Japanese
+      text: "\u7FFB\u8A33"

@@ -7,7 +7,7 @@ namespace Localization
     [CreateAssetMenu(fileName = "LocalizationData", menuName = "Localization/Translation Data")]
     public class LocalizationData : ScriptableObject
     {
-        public List<TranslationEntry> translations;
+        [SerializeField] private List<TranslationEntry> translations;
         public event Action OnLanguageChanged;
 
         private string currentLanguage = "English";

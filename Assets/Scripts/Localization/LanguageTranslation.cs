@@ -3,9 +3,15 @@ using System;
 namespace Localization
 {
     [Serializable]
-    public class LanguageTranslation
+    public struct LanguageTranslation
     {
         public string language;
         public string text;
+
+        public LanguageTranslation(string language, string text)
+        {
+            this.language = language;
+            this.text = text;
+        }
     }
 }
