@@ -10,8 +10,8 @@ namespace Localization
         public List<TranslationEntry> translations;
         public event Action OnLanguageChanged;
 
-        private string currentLanguage = "English"; // Default language
-        private Dictionary<string, TranslationEntry> translationDict = new();
+        private string currentLanguage = "English";
+        private Dictionary<string, TranslationEntry> translationDict;
 
         private void OnEnable()
         {
@@ -20,6 +20,8 @@ namespace Localization
 
         private void BuildTranslationDictionary()
         {
+            translationDict = new();
+
             translationDict.Clear();
 
             foreach (var entry in translations)

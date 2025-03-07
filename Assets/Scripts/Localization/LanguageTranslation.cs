@@ -1,8 +1,11 @@
 using System;
 
-[Serializable]
-public class LanguageTranslation
+namespace Localization
 {
-    public string language;
-    public string text;
+    [Serializable]
+    public class LanguageTranslation
+    {
+        public string language;
+        public string text;
+    }
 }
