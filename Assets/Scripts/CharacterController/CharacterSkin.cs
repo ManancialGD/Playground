@@ -9,6 +9,8 @@ public class CharacterSkin : MonoBehaviour
     [SerializeField] private Animator anim;
     [SerializeField] private InputActionReference moveAction;
     [SerializeField, Range(0.1f, 30)] private float slerpTime;
+    [SerializeField] private CharacterShooter characterShooter;
+    [SerializeField] private Animator shootLightAnim;
 
     public void UpdateRotation()
     {
@@ -23,9 +25,26 @@ public class CharacterSkin : MonoBehaviour
         anim.SetFloat("xInput", horizontalValue);
         anim.SetFloat("yInput", forwardValue);
     }
+
+    private void OnEnable()
+    {
+        characterShooter.ShootEvent += OnShootEvent;
+    }
+
+    private void OnDisable()
+    {
+        characterShooter.ShootEvent -= OnShootEvent;
+    }
+
+    private void OnShootEvent()
+    {
+        shootLightAnim.SetTrigger("Shoot");
+    }
+
     private void OnValidate()
     {
-        if(rb == null) rb = GetComponent<Rigidbody>();
+        if (rb == null) rb = GetComponent<Rigidbody>();
         if (anim == null) anim = GetComponentInChildren<Animator>();
+        if (characterShooter == null) characterShooter = GetComponent<CharacterShooter>();
     }
 }
