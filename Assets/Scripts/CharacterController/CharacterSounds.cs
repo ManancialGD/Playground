@@ -22,6 +22,7 @@ public class CharacterSounds : MonoBehaviour
         if (audioObject.TryGetComponent<AudioSource>(out var audioSource))
         {
             audioObject.transform.position = gunTip.position;
+            audioObject.transform.SetParent(gunTip, true);
             audioSource.clip = shootAudioCollection.GetRandomClip();
             // audioSource.pitch = RandomPitch(.9f, 1.1f); // this shouldn't be necessary, the sounds itself should have differentiations
             audioSource.maxDistance = 50;
