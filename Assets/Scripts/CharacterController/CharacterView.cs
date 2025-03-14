@@ -95,9 +95,15 @@ public class CharacterView : MonoBehaviour
             characterShooter = GetComponent<CharacterShooter>();
         if (impulseSource == null)
             impulseSource = GetComponent<CinemachineImpulseSource>();
-        
+
         // Resources Loading is expensive, we hope to do this once max.
         if (playerSettings == null)
-            playerSettings = Resources.Load<PlayerSettings>(Path.Combine("Settings", "PlayerSettings"));
+        {
+            PlayerSettings resourcesPlayerSettings = Resources.Load<PlayerSettings>(Path.Combine("Settings", "PlayerSettings"));
+            if (resourcesPlayerSettings != null)
+                playerSettings = resourcesPlayerSettings;
+            else
+                Debug.LogError("PlayeSerrings is not setup correctly, this may cause performance drops.");
+        }
     }
 }

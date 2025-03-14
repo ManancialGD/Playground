@@ -2,6 +2,7 @@ using System;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using GameConsole;
 
 [RequireComponent(typeof(CharacterMovement), typeof(CharacterView)),
 RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
@@ -17,6 +18,7 @@ public class CustomCharacterController : MonoBehaviour
     [SerializeField] private InputActionReference aimAction;
     [SerializeField] private InputActionReference runAction;
     [SerializeField] private CinemachineCamera aimCamera;
+    private GameConsoleController gameConsole;
 
     private bool runningInput = false;
 
@@ -33,7 +35,9 @@ public class CustomCharacterController : MonoBehaviour
 
     private void Update()
     {
-        characterView.UpdateView();
+        if (CharacterState != CharacterStates.Console)
+            characterView.UpdateView();
+
         characterSkin.UpdateRotation();
         characterSkin.UpdateAnimation();
         characterShooter.UpdateAim();
@@ -62,6 +66,9 @@ public class CustomCharacterController : MonoBehaviour
 
         if (characterShooter == null)
             characterShooter = GetComponent<CharacterShooter>();
+
+        if (gameConsole == null)
+            gameConsole = FindAnyObjectByType<GameConsoleController>();
     }
 
     private void OnEnable()
@@ -75,6 +82,12 @@ public class CustomCharacterController : MonoBehaviour
         {
             runAction.action.performed += OnRunPerformed;
             runAction.action.canceled += OnRunCanceled;
+        }
+
+        if (gameConsole != null)
+        {
+            gameConsole.ConsoleOpened.AddListener(OnConsoleOpened);
+            gameConsole.ConsoleClosed.AddListener(OnConsoleClosed);
         }
     }
 
@@ -90,10 +103,16 @@ public class CustomCharacterController : MonoBehaviour
             runAction.action.performed -= OnRunPerformed;
             runAction.action.canceled -= OnRunCanceled;
         }
+        if (gameConsole != null)
+        {
+            gameConsole.ConsoleOpened.RemoveListener(OnConsoleOpened);
+            gameConsole.ConsoleClosed.RemoveListener(OnConsoleClosed);
+        }
     }
 
     private void OnAimPerformed(InputAction.CallbackContext context)
     {
+        if (CharacterState == CharacterStates.Console) return;
         CharacterState = CharacterStates.Aimming;
         if (aimCamera != null)
             aimCamera.gameObject.SetActive(true);
@@ -101,12 +120,14 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnAimCanceled(InputAction.CallbackContext context)
     {
+        if (CharacterState == CharacterStates.Console) return;
         CharacterState = runningInput ? CharacterStates.Running : CharacterStates.Defaulft;
         if (aimCamera != null)
             aimCamera.gameObject.SetActive(false);
     }
     private void OnRunPerformed(InputAction.CallbackContext context)
     {
+        if (CharacterState == CharacterStates.Console) return;
         runningInput = true;
         if (CharacterState == CharacterStates.Aimming)
             aimCamera.gameObject.SetActive(false);
@@ -115,7 +136,21 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnRunCanceled(InputAction.CallbackContext context)
     {
+        if (CharacterState == CharacterStates.Console) return;
         runningInput = false;
+        CharacterState = CharacterStates.Defaulft;
+    }
+
+    private void OnConsoleOpened()
+    {
+        CharacterState = CharacterStates.Console;
+    }
+
+    private void OnConsoleClosed()
+    {
+        if (CharacterState == CharacterStates.Aimming)
+            aimCamera.gameObject.SetActive(false);
+
         CharacterState = CharacterStates.Defaulft;
     }
 }

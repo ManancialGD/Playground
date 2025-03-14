@@ -28,7 +28,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
         }
     }
 
-    private void OnCollisionEnter(Collision other)
+    private void OnTriggerEnter(Collider other)
     {
         HandleCollision();
     }

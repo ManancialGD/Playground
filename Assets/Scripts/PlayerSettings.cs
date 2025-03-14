@@ -43,7 +43,7 @@ public class PlayerSettings : ScriptableObject
         if (mainAudioMixer == null) SetAudioMixer(); // This is expensive, so we hope to do this only once, max.
         
         // [0-100] to [0-1]
-        value *= .001f;
+        value *= .01f;
 
         // Ensure the volume is not too small or negative to avoid invalid calculations
         if (value <= 1e-5f)
