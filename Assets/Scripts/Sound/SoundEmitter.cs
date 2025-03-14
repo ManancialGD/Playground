@@ -22,6 +22,7 @@ public class SoundEmitter : MonoBehaviour, IPooledObject
     {
         if (thisObjectPool == null) Destroy(gameObject);
         gameObject.SetActive(false);
+        audioSource.outputAudioMixerGroup = null;
         thisObjectPool.ReturnObject(gameObject);
     }
 

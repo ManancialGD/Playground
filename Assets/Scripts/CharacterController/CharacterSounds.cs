@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class CharacterSounds : MonoBehaviour
 {
@@ -7,6 +8,8 @@ public class CharacterSounds : MonoBehaviour
     [SerializeField] private CharacterShooter characterShooter;
 
     [SerializeField] private AudioCollection shootAudioCollection;
+    [SerializeField] private AudioMixerGroup shotsAdioMixerGroup;
+
     private void OnEnable()
     {
         characterShooter.ShootEvent += OnShoot;
@@ -23,6 +26,7 @@ public class CharacterSounds : MonoBehaviour
         {
             audioObject.transform.position = gunTip.position;
             audioObject.transform.SetParent(gunTip, true);
+            audioSource.outputAudioMixerGroup = shotsAdioMixerGroup;
             audioSource.clip = shootAudioCollection.GetRandomClip();
             // audioSource.pitch = RandomPitch(.9f, 1.1f); // this shouldn't be necessary, the sounds itself should have differentiations
             audioSource.maxDistance = 50;

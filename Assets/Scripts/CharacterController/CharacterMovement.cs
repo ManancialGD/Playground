@@ -10,7 +10,7 @@ public class CharacterMovement : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private AnimationCurve walkCurve;
     [SerializeField] private AnimationCurve runCurve;
-    [SerializeField] private AnimationCurve deaccelerationCurve;
+    [SerializeField] private AnimationCurve decelerationCurve;
 
     [Header("References")]
     [SerializeField] private Transform orientation;
@@ -67,10 +67,11 @@ public class CharacterMovement : MonoBehaviour
 
             moveDir = horizontalVelocity;
 
-            Vector3 force = -(moveDir.normalized * deaccelerationCurve.Evaluate(horizontalVelocity.magnitude));
+            Vector3 force = -(moveDir.normalized * decelerationCurve.Evaluate(horizontalVelocity.magnitude));
 
             rb.AddForce(force - horizontalVelocity, ForceMode.Force);
         }
+        Log(rb.linearVelocity.magnitude.ToString());
     }
 
     private void OnEnable()

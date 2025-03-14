@@ -16,8 +16,8 @@ public class CharacterView : MonoBehaviour
     [SerializeField, Range(0.15f, 15f)]
     private float aimSense = .25f;
 
-    [SerializeField] private float maxAngleUp = 45;
-    [SerializeField] private float maxAngleDown = 15;
+    [SerializeField] private float maxAngleUp = 15;
+    [SerializeField] private float maxAngleDown = 45;
     [SerializeField] private bool invertMouseY = false;
     [SerializeField] private CustomCharacterController characterController;
     [SerializeField] private CharacterShooter characterShooter;
@@ -51,13 +51,13 @@ public class CharacterView : MonoBehaviour
 
         float angle = cameraTarget.transform.localRotation.eulerAngles.x;
 
-        if (angle > 180 && angle < 360 - maxAngleDown)
+        if (angle > 180 && angle < 360 - maxAngleUp)
         {
-            angles.x = 360 - maxAngleDown;
+            angles.x = 360 - maxAngleUp;
         }
-        else if (angle < 180 && angle > maxAngleUp)
+        else if (angle < 180 && angle > maxAngleDown)
         {
-            angles.x = maxAngleUp;
+            angles.x = maxAngleDown;
         }
 
         cameraTarget.transform.localRotation = Quaternion.Euler(angles);
