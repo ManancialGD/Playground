@@ -68,12 +68,19 @@ AudioMixerController:
   m_SuspendThreshold: -80
   m_EnableSuspend: 1
   m_UpdateMode: 0
-  m_ExposedParameters: []
+  m_ExposedParameters:
+  - guid: c19788af8f81adc4090f9227145322a6
+    name: MainVol
+  - guid: db2aaeaf2f1e1ba499bff2465de4e7fa
+    name: MusicVol
+  - guid: f6dd9dc1695514547b85b29344abfe8b
+    name: SoundEffectsVol
   m_AudioMixerGroupViews:
   - guids:
     - f34ca714b6e3a0d4fab7dde51e685b39
     - c55339428447d6f43abddb6b0c4209b7
     - 9fdc3c4ab2608994bb21018918484f25
+    - cd3028c13a27a5a42bf2e951121de87b
     name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: 24500006}
@@ -88,6 +95,7 @@ AudioMixerGroupController:
   m_GroupID: f34ca714b6e3a0d4fab7dde51e685b39
   m_Children:
   - {fileID: -5958879707467782285}
+  - {fileID: 6491099195551594989}
   m_Volume: c19788af8f81adc4090f9227145322a6
   m_Pitch: c9f0edd70f9b7f64fad7f0e3719ad18a
   m_Send: 00000000000000000000000000000000
@@ -133,6 +141,39 @@ AudioMixerEffectController:
   m_EffectID: c9ec00c7ee73bd446a3caa4d608f0338
   m_EffectName: Attenuation
   m_MixLevel: 99ad7ba4664cb264b8767cb6dfd68bc0
+  m_Parameters: []
+  m_SendTarget: {fileID: 0}
+  m_EnableWetMix: 0
+  m_Bypass: 0
+--- !u!243 &6491099195551594989
+AudioMixerGroupController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Music
+  m_AudioMixer: {fileID: 24100000}
+  m_GroupID: cd3028c13a27a5a42bf2e951121de87b
+  m_Children: []
+  m_Volume: db2aaeaf2f1e1ba499bff2465de4e7fa
+  m_Pitch: d3a68bf61467a434e95254777d723c3e
+  m_Send: 00000000000000000000000000000000
+  m_Effects:
+  - {fileID: 6547112869700620098}
+  m_UserColorIndex: 0
+  m_Mute: 0
+  m_Solo: 0
+  m_BypassEffects: 0
+--- !u!244 &6547112869700620098
+AudioMixerEffectController:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_EffectID: 1345c03304f5af64cb14ce39655f913a
+  m_EffectName: Attenuation
+  m_MixLevel: e0f85df610efb6c428bdbc16511eff93
   m_Parameters: []
   m_SendTarget: {fileID: 0}
   m_EnableWetMix: 0

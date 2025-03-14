@@ -1,3 +1,4 @@
+using System.IO;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,21 +10,16 @@ public class CharacterView : MonoBehaviour
     [SerializeField] private InputActionReference lookAction;
 
     [SerializeField, Range(0.5f, 15f)]
-    private float senseX = .25f;
+    private float senseX = .5f;
     [SerializeField, Range(0.5f, 15f)]
     private float senseY = .5f;
-
-    [SerializeField, Range(0.15f, 15f)]
-    private float aimSense = .25f;
-
     [SerializeField] private float maxAngleUp = 15;
     [SerializeField] private float maxAngleDown = 45;
-    [SerializeField] private bool invertMouseY = false;
     [SerializeField] private CustomCharacterController characterController;
     [SerializeField] private CharacterShooter characterShooter;
     [SerializeField] private CinemachineImpulseSource impulseSource;
     [SerializeField, Range(0, .15f)] private float impulseForce = .05f;
-
+    [SerializeField] private PlayerSettings playerSettings;
     private Vector2 lookInput;
 
     private void Awake()
@@ -35,13 +31,14 @@ public class CharacterView : MonoBehaviour
     {
         Vector2 rotation = lookInput;
 
-        rotation.x *= senseX;
-        rotation.y *= senseY;
+        //? The sensitivity axes for player controls are swapped to align with the player's expected behavior. 
+        rotation.x *= senseX * playerSettings.SensitivityY;
+        rotation.y *= senseY * playerSettings.SensitivityX;
 
-        rotation.y *= invertMouseY ? 1 : -1;
+        rotation.y *= playerSettings.InvertMouseY ? 1 : -1;
 
         if (characterController.CharacterState == CharacterStates.Aimming)
-            rotation *= aimSense;
+            rotation *= playerSettings.AimMultiplier;
 
         cameraTarget.transform.rotation *= Quaternion.AngleAxis(rotation.x * senseX, Vector3.up);
         cameraTarget.transform.rotation *= Quaternion.AngleAxis(rotation.y * senseY, Vector3.right);
@@ -98,5 +95,9 @@ public class CharacterView : MonoBehaviour
             characterShooter = GetComponent<CharacterShooter>();
         if (impulseSource == null)
             impulseSource = GetComponent<CinemachineImpulseSource>();
+        
+        // Resources Loading is expensive, we hope to do this once max.
+        if (playerSettings == null)
+            playerSettings = Resources.Load<PlayerSettings>(Path.Combine("Settings", "PlayerSettings"));
     }
 }

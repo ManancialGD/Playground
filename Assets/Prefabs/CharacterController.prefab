@@ -154,7 +154,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.01
   far clip plane: 1000
   field of view: 55
   orthographic: 0
@@ -626,7 +626,25 @@ MonoBehaviour:
     m_RotationOrder: 4
   decelerationCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 4
+      inSlope: 4.454056
+      outSlope: 4.454056
+      tangentMode: 0
+      weightedMode: 3
+      inWeight: 0
+      outWeight: 0.7359033
+    - serializedVersion: 3
+      time: 4
+      value: 18
+      inSlope: 149.61964
+      outSlope: 149.61964
+      tangentMode: 0
+      weightedMode: 3
+      inWeight: 0.06035638
+      outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -649,16 +667,15 @@ MonoBehaviour:
   cameraTarget: {fileID: 6129486102842373097}
   orientation: {fileID: 629598668345729025}
   lookAction: {fileID: -5630151704836100654, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  senseX: 0.25
+  senseX: 0.5
   senseY: 0.5
-  aimSense: 0.25
   maxAngleUp: 15
   maxAngleDown: 45
-  invertMouseY: 0
   characterController: {fileID: 2132677581267863928}
   characterShooter: {fileID: 3533329048225809820}
   impulseSource: {fileID: 3690773343587471142}
   impulseForce: 0.05
+  playerSettings: {fileID: 11400000, guid: 65ea4e1b766de5d42990631991d5863c, type: 2}
 --- !u!114 &2132677581267863928
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc66a15f206120448816558b9cfde861, type: 3}
+  m_Name: PlayerSettings
+  m_EditorClassIdentifier: 
+  <SensitivityX>k__BackingField: 0.25
+  <SensitivityY>k__BackingField: 0.5
+  <AimMultiplier>k__BackingField: 0.5
+  <InvertMouseY>k__BackingField: 0
+  mainAudioMixer: {fileID: 24100000, guid: 51b0d23097b2e1f43ae670fe4bbcd80c, type: 2}
