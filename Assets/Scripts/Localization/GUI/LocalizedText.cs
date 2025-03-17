@@ -1,3 +1,4 @@
+using System.IO;
 using TMPro;
 using UnityEngine;
 
@@ -27,7 +28,7 @@ namespace Localization.GUI
             if (textComponent == null)
                 textComponent = GetComponent<TextMeshProUGUI>();
             if (localizationData == null)
-                localizationData = Resources.Load<LocalizationData>("MainLocalizationData");
+                localizationData = Resources.Load<LocalizationData>(Path.Combine("Localization", "MainLocalizationData"));
 
             UpdateText();
         }

@@ -13,19 +13,51 @@ MonoBehaviour:
   m_Name: MainLocalizationData
   m_EditorClassIdentifier: 
   translations:
-  - key: test
+  - key: Continue
     translations:
     - language: English
-      text: Exemple
+      text: CONTINUE
     - language: Portuguese
-      text: Exemplo
+      text: CONTINUAR
     - language: Japanese
-      text: "\u4F8B"
-  - key: testTitle
+      text: "\u7D9A\u304D\u304B\u3089"
+  - key: NewGame
     translations:
     - language: English
-      text: Localization
+      text: NEW GAME
     - language: Portuguese
-      text: "Tradu\xE7\xE3o"
+      text: NOVO JOGO
     - language: Japanese
-      text: "\u7FFB\u8A33"
+      text: "\u6700\u521D\u304B\u3089"
+  - key: Settings
+    translations:
+    - language: English
+      text: SETTINGS
+    - language: Portuguese
+      text: "CONFIGURA\xC7\xD5ES"
+    - language: Japanese
+      text: "\u30AA\u30D7\u30B7\u30E7\u30F3"
+  - key: Controls
+    translations:
+    - language: English
+      text: CONTROLS
+    - language: Portuguese
+      text: CONTROLES
+    - language: Japanese
+      text: "\u64CD\u4F5C"
+  - key: Exit
+    translations:
+    - language: English
+      text: EXIT
+    - language: Portuguese
+      text: SAIR
+    - language: Japanese
+      text: "\u7D42\u4E86"
+  - key: Credits
+    translations:
+    - language: English
+      text: CREDITS
+    - language: Portuguese
+      text: CREDITOS
+    - language: Japanese
+      text: "\u30AF\u30EC\u30B8\u30C3\u30C8"

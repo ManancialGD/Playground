@@ -254,7 +254,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 451352887467025789}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.0044864444, z: -0, w: 0.9999899}
+  m_LocalRotation: {x: 0, y: 0.0044864444, z: 0, w: 0.9999899}
   m_LocalPosition: {x: 0.48652068, y: 1.5029999, z: -1.5044261}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -828,10 +828,10 @@ MonoBehaviour:
   characterShooter: {fileID: 3533329048225809820}
   shootAudioCollection:
     audioClips:
-    - {fileID: 8300000, guid: ad5d3297213ba944b9d5906fbd98bad4, type: 3}
-    - {fileID: 8300000, guid: e7992a2ee0d7b89418f7282073c3e989, type: 3}
-    - {fileID: 8300000, guid: 8cf57bf3ca31278469423c9dba65d7a1, type: 3}
-    - {fileID: 8300000, guid: 2b3234db608306f4bb868aaf972d9064, type: 3}
+    - {fileID: 8300000, guid: 057f6e907f30f014a941c78719ed70a7, type: 3}
+    - {fileID: 8300000, guid: 67212080bd3203a42bb83fdcb6a8a02e, type: 3}
+    - {fileID: 8300000, guid: 9e0289ff9626f7749ba56736d27a8a03, type: 3}
+    - {fileID: 8300000, guid: fcea1816fb561fb4989fb24409faa867, type: 3}
   shotsAdioMixerGroup: {fileID: -460781356209849396, guid: 51b0d23097b2e1f43ae670fe4bbcd80c, type: 2}
 --- !u!54 &7512388404220854862
 Rigidbody:
@@ -943,7 +943,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097805711453914482}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.004486445, z: 0, w: 0.9999899}
+  m_LocalRotation: {x: 0, y: 0.0044864453, z: 0, w: 0.9999899}
   m_LocalPosition: {x: 0.48652068, y: 1.5029999, z: -1.5044261}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
