@@ -1862,6 +1862,10 @@ PrefabInstance:
       value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 3345085265447689634, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: impulseSource
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3345085265447689634, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: playerSettings
       value: 
       objectReference: {fileID: 11400000, guid: 65ea4e1b766de5d42990631991d5863c, type: 2}
@@ -2413,7 +2417,8 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4056659954985230331, guid: dc75ab864f073d743a946c69da662417, type: 3}
     m_RemovedGameObjects:
     - {fileID: 7293246382681785895, guid: dc75ab864f073d743a946c69da662417, type: 3}
     m_AddedGameObjects:

@@ -31,17 +31,14 @@ public class PlayerSettings : ScriptableObject
         }
     }
 
-    [SerializeField] private AudioMixer mainAudioMixer;
+    private static AudioMixer mainAudioMixer;
 
-    private void SetAudioMixer()
+    public static void SetAudioVolume(string volumeParam, float value)
     {
-        mainAudioMixer = Resources.Load<AudioMixer>("MainMixer");
-    }
+        if (mainAudioMixer == null)
+            if (!LoadAudioMixer()) // This is expensive, so we hope to do this only once, max.
+                return;
 
-    private void SetAudioVolume(string volumeParam, float value)
-    {
-        if (mainAudioMixer == null) SetAudioMixer(); // This is expensive, so we hope to do this only once, max.
-        
         // [0-100] to [0-1]
         value *= .01f;
 
@@ -55,5 +52,28 @@ public class PlayerSettings : ScriptableObject
         // - Linear input < 1.0 to negative decibels (attenuated volume).
         // - Values near 0 are clamped to approximately -80 dB.
         mainAudioMixer.SetFloat(volumeParam, Mathf.Log10(value) * 20);
+    }
+
+    /// <summary>
+    /// Try to load main mixer from Resources folder.
+    /// </summary>
+    /// <returns>True if successfull, False if failed to load</returns>
+    private static bool LoadAudioMixer()
+    {
+        try
+        {
+            mainAudioMixer = Resources.Load<AudioMixer>("MainMixer");
+            if (mainAudioMixer == null)
+            {
+                Debug.LogError("Failed to load MainMixer");
+                return false;
+            }
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Exception occurred while loading MainMixer: {ex.Message}");
+            return false;
+        }
     }
 }

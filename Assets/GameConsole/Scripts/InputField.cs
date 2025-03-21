@@ -3,6 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace GameConsole
 {
@@ -28,6 +31,8 @@ namespace GameConsole
 
         // The RectTransform of the selection image.
         private RectTransform selectionImageRectTransform;
+
+        private IList<string> commandHistory;
 
         // The actual text entered by the user.
         private string text = "";
@@ -61,6 +66,29 @@ namespace GameConsole
 
         private bool canListenToInput = true;
 
+        private int historyIndex = 0;
+
+        private int HistoryIndex
+        {
+            get => historyIndex;
+            set
+            {
+                if (value > commandHistory.Count - 1)
+                {
+                    historyIndex = 0;
+                }
+                else if (value < 0)
+                {
+                    historyIndex = commandHistory.Count - 1;
+                }
+                else historyIndex = value;
+            }
+        }
+
+        private bool isOnHistory = false;
+
+        private readonly int commandHistoryMaxCount = 100;
+
         /// <summary>
         /// Initializes the input field and its components.
         /// </summary>
@@ -71,6 +99,9 @@ namespace GameConsole
                 Debug.LogError("Text Area or Selection Image is not assigned!", this);
                 return;
             }
+
+            commandHistory = new List<string>();
+            onSubmit.AddListener(OnCommandSubmit);
 
             selectionImageRectTransform = selectionImage.GetComponent<RectTransform>();
             selectionImage.gameObject.SetActive(false); // Initially hide the selection image
@@ -105,7 +136,41 @@ namespace GameConsole
         {
             if (Input.anyKeyDown)
             {
-                if (Input.GetKeyDown(KeyCode.Return))
+                if (Input.GetKeyDown(KeyCode.UpArrow))
+                {
+                    if (!isPreviewing)
+                    {
+                        if (commandHistory.Count == 0) return;
+                        if (!isOnHistory || text == "")
+                        {
+                            isOnHistory = true;
+                            HistoryIndex = commandHistory.Count - 1;
+                        }
+                        else HistoryIndex -= 1;
+
+                        text = commandHistory[HistoryIndex];
+                        caretPosition = text.Length; // Move caret to end of preview text
+                        isPreviewing = false;
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    if (!isPreviewing)
+                    {
+                        if (commandHistory.Count == 0) return;
+                        if (!isOnHistory || text == "")
+                        {
+                            isOnHistory = true;
+                            HistoryIndex = 0;
+                        }
+                        else HistoryIndex += 1;
+
+                        text = commandHistory[HistoryIndex];
+                        caretPosition = text.Length; // Move caret to end of preview text
+                        isPreviewing = false;
+                    }
+                }
+                else if (Input.GetKeyDown(KeyCode.Return))
                 {
                     // Submit text if previewing is off
                     if (isPreviewing)
@@ -226,10 +291,23 @@ namespace GameConsole
                     }
                     UpdateTextArea();
                 }
-                else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.A))
+                else if (Input.GetKey(KeyCode.LeftControl))
                 {
-                    // Select all text (Ctrl + A)
-                    SelectAllText();
+                    if (Input.GetKeyDown(KeyCode.A))
+                        SelectAllText();
+                    else if (Input.GetKeyDown(KeyCode.C) && allTextSelected)
+                    {
+                        GUIUtility.systemCopyBuffer = text;
+                    }
+                    else if (Input.GetKeyDown(KeyCode.V))
+                    {
+                        string pastedText = GUIUtility.systemCopyBuffer;
+                        text += pastedText;
+                        caretPosition = text.Length;
+
+                        if (allTextSelected)
+                            UpdateSelectionImage();
+                    }
                 }
                 else
                 {
@@ -471,6 +549,19 @@ namespace GameConsole
 
                 yield return waitForDelectionDelay;
             }
+        }
+
+        private void OnCommandSubmit(string command)
+        {
+            if (commandHistory.Count == commandHistoryMaxCount)
+            {
+                Queue<string> qCH = new(commandHistory);
+                qCH.Dequeue();
+                commandHistory = qCH.ToArray().ToList();
+            }
+            commandHistory.Add(command);
+            isOnHistory = false;
+            HistoryIndex = 0;
         }
 
         /// <summary>
