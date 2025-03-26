@@ -1,35 +1,32 @@
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.iOS;
-using UnityEngine.Scripting.APIUpdating;
 
-[RequireComponent(typeof(Rigidbody))]
-public class CharacterMovement : MonoBehaviour
+public class CharacterMovement
 {
-    [Header("Settings")]
-    [SerializeField] private AnimationCurve walkCurve;
-    [SerializeField] private AnimationCurve runCurve;
-    [SerializeField] private AnimationCurve decelerationCurve;
-
-    [Header("References")]
-    [SerializeField] private Transform orientation;
-    [SerializeField]
+    private AnimationCurve walkCurve;
+    private AnimationCurve runCurve;
+    private AnimationCurve decelerationCurve;
+    private Transform orientation;
     private InputActionReference movementAction;
-
-    [Header("Debugging")]
-    [SerializeField, Tooltip("Enable this to display debug messages from this script in the Console.")]
-    private bool showDebugMessages = false;
-    [SerializeField, Tooltip("If enabled, debug messages will include the object's name as an identifier."), ShowIf(nameof(showDebugMessages))]
-    private bool identifyObject = true;
 
     private Vector2 movementInput;
     private Vector3 moveDir;
     private Rigidbody rb;
 
-    private void Awake()
+    public CharacterMovement(Rigidbody rb,
+                            AnimationCurve walkCurve, AnimationCurve runCurve, AnimationCurve decelerationCurve,
+                            Transform orientation, InputActionReference movementAction)
     {
-        OnValidate();
+        this.rb = rb;
+        this.walkCurve = walkCurve;
+        this.runCurve = runCurve;
+        this.decelerationCurve = decelerationCurve;
+        this.orientation = orientation;
+        this.movementAction = movementAction;
+        
+        movementAction.action.performed += OnMovementAction;
+        movementAction.action.canceled += OnMovementAction;
     }
 
     public void UpdateWalkMovement()
@@ -71,24 +68,11 @@ public class CharacterMovement : MonoBehaviour
 
             rb.AddForce(force - horizontalVelocity, ForceMode.Force);
         }
-        Log(rb.linearVelocity.magnitude.ToString());
     }
 
-    private void OnEnable()
+    private bool Validate()
     {
-        movementAction.action.performed += OnMovementAction;
-        movementAction.action.canceled += OnMovementAction;
-    }
-    private void OnDisable()
-    {
-        movementAction.action.performed -= OnMovementAction;
-        movementAction.action.canceled -= OnMovementAction;
-    }
-
-    private void OnValidate()
-    {
-        if (rb == null)
-            rb = GetComponent<Rigidbody>();
+        return rb != null;
     }
 
     private void OnMovementAction(InputAction.CallbackContext context)
@@ -96,21 +80,5 @@ public class CharacterMovement : MonoBehaviour
         Vector2 v = context.ReadValue<Vector2>();
 
         if (v != null) movementInput = v;
-    }
-
-    /// <summary>
-    /// Logs a debug message to the Console if debugging is enabled.
-    /// Includes the object's name as an identifier if 'identifyObject' is true.
-    /// </summary>
-    /// <param name="message">The debug message to log.</param>
-    private void Log(string message)
-    {
-        if (showDebugMessages)
-        {
-            if (identifyObject)
-                Debug.Log(message, this); // Includes object name in the log message.
-            else
-                Debug.Log(message); // Logs without object name.
-        }
     }
 }

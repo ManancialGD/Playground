@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 0.2
+  m_AmbientIntensity: 0.77
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
@@ -617,6 +617,17 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1922662816668992015, guid: dc75ab864f073d743a946c69da662417, type: 3}
   m_PrefabInstance: {fileID: 3154838345831155273}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &818488677 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3690773343587471142, guid: dc75ab864f073d743a946c69da662417, type: 3}
+  m_PrefabInstance: {fileID: 3154838345831155273}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 818488674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 180ecf9b41d478f468eb3e9083753217, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1742,9 +1753,81 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
-      propertyPath: runAction
-      value: 
-      objectReference: {fileID: -7471211009204490832, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].time
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].time
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].time
+      value: 1.906311
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].value
+      value: 20.174805
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].value
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].value
+      value: 0.12902832
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].inSlope
+      value: 225.98904
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].inSlope
+      value: -159.94969
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].inSlope
+      value: -13.950809
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].outSlope
+      value: 225.98904
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].inWeight
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].outSlope
+      value: -159.94969
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].inWeight
+      value: 0.74029446
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].outSlope
+      value: -13.950809
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].outWeight
+      value: 0.09187041
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[1].outWeight
+      value: 0.26238286
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[0].weightedMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: walkCurve.m_Curve.Array.data[2].weightedMode
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 2236832419043895274, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: Lens.NearClipPlane
       value: 0.01
@@ -1864,7 +1947,7 @@ PrefabInstance:
     - target: {fileID: 3345085265447689634, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: impulseSource
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 818488677}
     - target: {fileID: 3345085265447689634, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: playerSettings
       value: 

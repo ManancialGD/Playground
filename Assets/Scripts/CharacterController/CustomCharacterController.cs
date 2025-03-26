@@ -1,10 +1,10 @@
-using System;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using GameConsole;
+using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 
-[RequireComponent(typeof(CharacterMovement), typeof(CharacterView)),
+[RequireComponent(typeof(CharacterView)),
 RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
 public class CustomCharacterController : MonoBehaviour
 {
@@ -14,13 +14,24 @@ public class CustomCharacterController : MonoBehaviour
     private CharacterShooter characterShooter;
 
     public CharacterStates CharacterState { get; private set; }
-
+    [SerializeField] private Transform orientation;
+    [SerializeField] private AnimationCurve walkCurve;
+    [SerializeField] private AnimationCurve runCurve;
+    [SerializeField] private AnimationCurve decelerationCurve;
     [SerializeField] private InputActionReference aimAction;
     [SerializeField] private InputActionReference runAction;
+    [SerializeField] private InputActionReference movementAction;
     [SerializeField] private CinemachineCamera aimCamera;
+    [SerializeField] private Rigidbody rb;
+
     private GameConsoleController gameConsole;
 
     private bool runningInput = false;
+
+    private void Awake()
+    {
+        characterMovement = new CharacterMovement(rb, walkCurve, runCurve, decelerationCurve, orientation, movementAction);
+    }
 
     public void Start()
     {
@@ -35,6 +46,11 @@ public class CustomCharacterController : MonoBehaviour
 
     private void Update()
     {
+        if (rb.linearVelocity.magnitude > 1e-4)
+            Debug.Log($"{rb.linearVelocity.magnitude}, {Time.time}");
+        else
+            Debug.Log("0, " + Time.time);
+
         if (CharacterState != CharacterStates.Console)
             characterView.UpdateView();
 
@@ -55,9 +71,6 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnValidate()
     {
-        if (characterMovement == null)
-            characterMovement = GetComponent<CharacterMovement>();
-
         if (characterView == null)
             characterView = GetComponent<CharacterView>();
 
@@ -69,6 +82,8 @@ public class CustomCharacterController : MonoBehaviour
 
         if (gameConsole == null)
             gameConsole = FindAnyObjectByType<GameConsoleController>();
+        if (rb == null)
+            rb = GetComponent<Rigidbody>();
     }
 
     private void OnEnable()
