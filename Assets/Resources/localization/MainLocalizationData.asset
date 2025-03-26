@@ -44,7 +44,7 @@ MonoBehaviour:
     - language: Portuguese
       text: CONTROLES
     - language: Japanese
-      text: "\u64CD\u4F5C"
+      text: "\u64CD\u4F5C\u30AC\u30A4\u30C9"
   - key: Exit
     translations:
     - language: English
