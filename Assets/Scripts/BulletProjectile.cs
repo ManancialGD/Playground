@@ -41,6 +41,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
     public void ReturnToPoll()
     {
         if (thisObjectPool == null) Destroy(gameObject);
+        StopObject();
         gameObject.SetActive(false);
         thisObjectPool.ReturnObject(gameObject);
     }
@@ -57,7 +58,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
     {
         rb.linearVelocity = Vector3.zero;
         rb.Sleep();
-        Invoke(nameof(ReturnToPoll), trail.time + 0.5f);
+        Invoke(nameof(ReturnToPoll), trail.time);
     }
 
     public void StartObject()
@@ -69,7 +70,8 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
 
     private IEnumerator EnableTrail()
     {
-        yield return null;
+        while (rb.linearVelocity.magnitude < 1e-4)
+            yield return null;
 
         trail.emitting = true;
     }

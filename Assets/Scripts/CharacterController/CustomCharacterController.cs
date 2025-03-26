@@ -46,11 +46,6 @@ public class CustomCharacterController : MonoBehaviour
 
     private void Update()
     {
-        if (rb.linearVelocity.magnitude > 1e-4)
-            Debug.Log($"{rb.linearVelocity.magnitude}, {Time.time}");
-        else
-            Debug.Log("0, " + Time.time);
-
         if (CharacterState != CharacterStates.Console)
             characterView.UpdateView();
 

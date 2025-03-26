@@ -868,7 +868,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectToPoll: {fileID: 6040906979074623679, guid: afecee50978086c43abc2f6a2c42068b, type: 3}
-  objectPollAmount: 150
+  objectPollAmount: 110
   showDebugMessages: 0
   identifyObject: 1
 --- !u!1 &1266860744
