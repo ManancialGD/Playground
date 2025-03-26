@@ -868,7 +868,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectToPoll: {fileID: 6040906979074623679, guid: afecee50978086c43abc2f6a2c42068b, type: 3}
-  objectPollAmount: 40
+  objectPollAmount: 150
   showDebugMessages: 0
   identifyObject: 1
 --- !u!1 &1266860744
@@ -1754,15 +1754,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.size
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].time
-      value: 0
+      value: 0.01818794
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].time
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[2].time
@@ -1770,11 +1770,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].value
-      value: 20.174805
+      value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].value
-      value: 100
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[2].value
@@ -1782,11 +1782,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].inSlope
-      value: 225.98904
+      value: -225.85759
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].inSlope
-      value: -159.94969
+      value: -3.5802498
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[2].inSlope
@@ -1794,15 +1794,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].outSlope
-      value: 225.98904
+      value: -225.85759
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].inWeight
-      value: 0
+      value: 0.40963227
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].outSlope
-      value: -159.94969
+      value: -3.5802498
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[2].inWeight
@@ -1814,15 +1814,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].outWeight
-      value: 0.09187041
+      value: 0.08959202
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[1].outWeight
-      value: 0.26238286
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[0].weightedMode
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.data[2].weightedMode

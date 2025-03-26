@@ -57,7 +57,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
     {
         rb.linearVelocity = Vector3.zero;
         rb.Sleep();
-        Invoke(nameof(ReturnToPoll), trail.time);
+        Invoke(nameof(ReturnToPoll), trail.time + 0.5f);
     }
 
     public void StartObject()
