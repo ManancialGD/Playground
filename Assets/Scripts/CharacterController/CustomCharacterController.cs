@@ -2,7 +2,6 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using GameConsole;
-using Unity.VisualScripting.ReorderableList.Element_Adder_Menu;
 
 [RequireComponent(typeof(CharacterView)),
 RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
