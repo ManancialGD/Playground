@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 
 [RequireComponent(typeof(Collider), typeof(Rigidbody))]
 public class BulletProjectile : MonoBehaviour, IPooledObject
