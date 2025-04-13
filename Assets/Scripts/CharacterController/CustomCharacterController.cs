@@ -13,7 +13,10 @@ public class CustomCharacterController : MonoBehaviour
     private CharacterShooter characterShooter;
 
     public CharacterStates CharacterState { get; private set; }
+
     [SerializeField] private Transform orientation;
+    [SerializeField] private float maxWalkSpeed = 8f;
+    [SerializeField] private float maxRunSpeed = 12f;
     [SerializeField] private AnimationCurve walkCurve;
     [SerializeField] private AnimationCurve runCurve;
     [SerializeField] private AnimationCurve decelerationCurve;
@@ -29,7 +32,7 @@ public class CustomCharacterController : MonoBehaviour
 
     private void Awake()
     {
-        characterMovement = new CharacterMovement(rb, walkCurve, runCurve, decelerationCurve, orientation, movementAction);
+        characterMovement = new CharacterMovement(rb, walkCurve, runCurve, decelerationCurve, orientation, movementAction, maxWalkSpeed, maxRunSpeed);
     }
 
     public void Start()

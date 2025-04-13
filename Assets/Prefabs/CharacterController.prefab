@@ -411,21 +411,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 12
-      inSlope: -1.363365
-      outSlope: -1.363365
+      value: 10
+      inSlope: -0.5789469
+      outSlope: -0.5789469
       tangentMode: 0
       weightedMode: 3
       inWeight: 0
-      outWeight: 0.78580993
+      outWeight: 0.6551033
     - serializedVersion: 3
-      time: 1.906311
-      value: 0.12902832
-      inSlope: -24.17558
-      outSlope: -24.17558
+      time: 8
+      value: 0
+      inSlope: -3.2072577
+      outSlope: -3.2072577
       tangentMode: 0
       weightedMode: 3
-      inWeight: 0.21419008
+      inWeight: 0.39542198
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -1391,8 +1391,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22df12ab23730d0488fe13336c4ca0ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxIntensity: 69117
-  minIntensity: 5775
+  maxIntensity: 1000
+  minIntensity: 25
   maxDistance: 10
   minDistance: 5
 --- !u!1 &6542754187770170086
