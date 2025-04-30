@@ -18,6 +18,7 @@ public class CustomCharacterController : MonoBehaviour
     [SerializeField] private float maxRunSpeed = 12f;
     [SerializeField] private float acceleration = 32;
     [SerializeField] private float deceleration = 32;
+    [SerializeField] private float counterStrafingForce;
     [SerializeField] private InputActionReference aimAction;
     [SerializeField] private InputActionReference runAction;
     [SerializeField] private InputActionReference movementAction;
@@ -30,7 +31,7 @@ public class CustomCharacterController : MonoBehaviour
 
     private void Awake()
     {
-        characterMovement = new CharacterMovement(rb, acceleration, deceleration, orientation, movementAction, maxWalkSpeed, maxRunSpeed);
+        characterMovement = new CharacterMovement(rb, acceleration, deceleration, counterStrafingForce, orientation, movementAction, maxWalkSpeed, maxRunSpeed);
     }
 
     public void Start()

@@ -6,9 +6,11 @@ public class CharacterMovement
 {
     private float acceleration;
     private float deceleration;
+    private float counterStrafingForce;
     private Transform orientation;
     private float maxWalkSpeed = 8f;
     private float maxRunSpeed = 12f;
+    
     private InputActionReference movementAction;
 
     private Vector2 movementInput;
@@ -16,13 +18,14 @@ public class CharacterMovement
     private Rigidbody rb;
 
     public CharacterMovement(Rigidbody rb,
-                            float acceleration, float deceleration,
+                            float acceleration, float deceleration, float counterStrafingForce,
                             Transform orientation, InputActionReference movementAction,
                             float maxWalkSpeed = 8f, float maxRunSpeed = 12f)
     {
         this.rb = rb;
         this.acceleration = acceleration;
         this.deceleration = deceleration;
+        this.counterStrafingForce = counterStrafingForce;
         this.orientation = orientation;
         this.movementAction = movementAction;
         this.maxWalkSpeed = maxWalkSpeed;
@@ -56,22 +59,25 @@ public class CharacterMovement
 
             moveDir = (flatForward * movementInput.y + flatRight * movementInput.x).normalized;
 
-            Vector3 horizontalVelocity = new(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
             Vector3 targetVelocity = moveDir * maxSpeed;
 
-            // Calculate the desired change in velocity
+            // Calculate desired change in velocity
             Vector3 desiredDeltaV = targetVelocity - horizontalVelocity;
 
-            // Limit the change in velocity to the maximum allowed by acceleration
-            float maxDeltaV = acceleration * Time.fixedDeltaTime;
+            // Determine if counter-strafing (input opposes current velocity)
+            float velocityDot = Vector3.Dot(moveDir, horizontalVelocity.normalized);
+            bool isCounterStrafing = velocityDot < -0.5f; // Adjust threshold as needed
+
+            // Use deceleration when counter-strafing
+            float appliedAcceleration = isCounterStrafing ? counterStrafingForce : acceleration;
+            float maxDeltaV = appliedAcceleration * Time.fixedDeltaTime;
+
+            // Clamp the velocity change to avoid overshooting
             Vector3 clampedDeltaV = Vector3.ClampMagnitude(desiredDeltaV, maxDeltaV);
 
-            // Apply the force as an impulse (considering mass)
-            Vector3 impulse = rb.mass * clampedDeltaV;
-            
-            rb.AddForce(impulse, ForceMode.Impulse);
-
-            Debug.Log(rb.linearVelocity.magnitude);
+            // Apply force as an impulse (accounting for mass)
+            rb.AddForce(rb.mass * clampedDeltaV, ForceMode.Impulse);
         }
         else
         {

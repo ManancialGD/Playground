@@ -406,78 +406,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   orientation: {fileID: 629598668345729025}
-  walkCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 10
-      inSlope: -0.5789469
-      outSlope: -0.5789469
-      tangentMode: 0
-      weightedMode: 3
-      inWeight: 0
-      outWeight: 0.6551033
-    - serializedVersion: 3
-      time: 8
-      value: 0
-      inSlope: -3.2072577
-      outSlope: -3.2072577
-      tangentMode: 0
-      weightedMode: 3
-      inWeight: 0.39542198
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  runCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 15
-      inSlope: -0.058589898
-      outSlope: -0.058589898
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.06961178
-    - serializedVersion: 3
-      time: 12
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  decelerationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 20
-      value: 45
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  maxWalkSpeed: 3
+  maxRunSpeed: 5
+  acceleration: 9
+  deceleration: 15
   aimAction: {fileID: 410532493584127312, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
   runAction: {fileID: -7471211009204490832, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
   movementAction: {fileID: -1680190386980627800, guid: 35845fe01580c41289b024647b1d1c53, type: 3}

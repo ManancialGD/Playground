@@ -2437,12 +2437,12 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   volumeAnchorOverride: {fileID: 0}
-  antialiasing: 0
+  antialiasing: 2
   SMAAQuality: 2
   dithering: 0
   stopNaNs: 0
   taaSharpenStrength: 0.5
-  TAAQuality: 1
+  TAAQuality: 2
   taaSharpenMode: 0
   taaRingingReduction: 0
   taaHistorySharpening: 0.35
@@ -2893,20 +2893,12 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
-      propertyPath: maxRunSpeed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
-      propertyPath: acceleration
-      value: 9
-      objectReference: {fileID: 0}
-    - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: deceleration
-      value: 9
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
-      propertyPath: maxWalkSpeed
-      value: 3
+      propertyPath: counterStrafingForce
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 2132677581267863928, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: walkCurve.m_Curve.Array.size
