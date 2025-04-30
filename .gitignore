@@ -80,3 +80,6 @@ crashlytics-build.properties
 # Textures, Sounds
 /[Aa]ssets/[Tt]extures/*
 /[Aa]ssets/[Ss]ounds/*
+
+/[Aa]ssets/StreamingAssets/*
+/[Aa]ssets/StreamingAssets/DataFiles/*
