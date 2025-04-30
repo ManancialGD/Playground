@@ -123,7 +123,7 @@ MonoBehaviour:
   active: 1
   quality:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 3
   enable:
     m_OverrideState: 1
     m_Value: 1
@@ -155,7 +155,7 @@ MonoBehaviour:
     m_Value: 0
   m_DenoiserRadiusSS:
     m_OverrideState: 1
-    m_Value: 0.5
+    m_Value: 0.65
   m_SecondDenoiserPassSS:
     m_OverrideState: 1
     m_Value: 1
@@ -227,7 +227,7 @@ MonoBehaviour:
     m_Value: 2
   rayTracing:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   intensity:
     m_OverrideState: 1
     m_Value: 1
@@ -280,7 +280,7 @@ MonoBehaviour:
     m_Value: 4
   m_RayLength:
     m_OverrideState: 1
-    m_Value: 20
+    m_Value: 2
   m_SampleCount:
     m_OverrideState: 1
     m_Value: 8

@@ -4,9 +4,8 @@ using UnityEngine.InputSystem;
 
 public class CharacterMovement
 {
-    private AnimationCurve walkCurve;
-    private AnimationCurve runCurve;
-    private AnimationCurve decelerationCurve;
+    private float acceleration;
+    private float deceleration;
     private Transform orientation;
     private float maxWalkSpeed = 8f;
     private float maxRunSpeed = 12f;
@@ -17,14 +16,13 @@ public class CharacterMovement
     private Rigidbody rb;
 
     public CharacterMovement(Rigidbody rb,
-                            AnimationCurve walkCurve, AnimationCurve runCurve, AnimationCurve decelerationCurve,
+                            float acceleration, float deceleration,
                             Transform orientation, InputActionReference movementAction,
                             float maxWalkSpeed = 8f, float maxRunSpeed = 12f)
     {
         this.rb = rb;
-        this.walkCurve = walkCurve;
-        this.runCurve = runCurve;
-        this.decelerationCurve = decelerationCurve;
+        this.acceleration = acceleration;
+        this.deceleration = deceleration;
         this.orientation = orientation;
         this.movementAction = movementAction;
         this.maxWalkSpeed = maxWalkSpeed;
@@ -36,33 +34,44 @@ public class CharacterMovement
 
     public void UpdateWalkMovement()
     {
-        UpdateMovement(walkCurve, maxWalkSpeed);
+        UpdateMovement(maxWalkSpeed);
     }
 
     public void UpdateRunMovement()
     {
-        UpdateMovement(runCurve, maxRunSpeed);
-    }
-    public void UpdateAimMovement()
-    {
-        UpdateMovement(walkCurve, maxWalkSpeed, 0.75f);
+        UpdateMovement(maxRunSpeed);
     }
 
-    private void UpdateMovement(AnimationCurve movementCurve, float maxSpeed, float velMultiplier = 1)
+    public void UpdateAimMovement()
+    {
+        UpdateMovement(maxWalkSpeed);
+    }
+
+    private void UpdateMovement(float maxSpeed)
     {
         if (Mathf.Abs(movementInput.x) > 1e-5f || Mathf.Abs(movementInput.y) > 1e-5f)
         {
             Vector3 flatForward = new Vector3(orientation.forward.x, 0, orientation.forward.z).normalized;
             Vector3 flatRight = new Vector3(orientation.right.x, 0, orientation.right.z).normalized;
 
-            moveDir = flatForward * movementInput.y + flatRight * movementInput.x;
+            moveDir = (flatForward * movementInput.y + flatRight * movementInput.x).normalized;
 
             Vector3 horizontalVelocity = new(rb.linearVelocity.x, 0, rb.linearVelocity.z);
-            float speed = movementCurve.Evaluate(horizontalVelocity.magnitude) * velMultiplier;
-            speed = Mathf.Clamp(speed, 0, maxSpeed - rb.linearVelocity.magnitude);
-            Vector3 force = moveDir.normalized * speed;
+            Vector3 targetVelocity = moveDir * maxSpeed;
 
-            rb.AddForce(force - horizontalVelocity, ForceMode.Impulse);
+            // Calculate the desired change in velocity
+            Vector3 desiredDeltaV = targetVelocity - horizontalVelocity;
+
+            // Limit the change in velocity to the maximum allowed by acceleration
+            float maxDeltaV = acceleration * Time.fixedDeltaTime;
+            Vector3 clampedDeltaV = Vector3.ClampMagnitude(desiredDeltaV, maxDeltaV);
+
+            // Apply the force as an impulse (considering mass)
+            Vector3 impulse = rb.mass * clampedDeltaV;
+            
+            rb.AddForce(impulse, ForceMode.Impulse);
+
+            Debug.Log(rb.linearVelocity.magnitude);
         }
         else
         {
@@ -70,14 +79,13 @@ public class CharacterMovement
 
             moveDir = horizontalVelocity;
 
-            float speed = decelerationCurve.Evaluate(horizontalVelocity.magnitude);
-            speed = Mathf.Clamp(speed, 0, rb.linearVelocity.magnitude);
+            float speed = deceleration * Time.fixedDeltaTime;
+            speed = Mathf.Clamp(speed, 0, horizontalVelocity.magnitude);
 
             Vector3 force = -(moveDir.normalized * speed);
 
-            rb.AddForce(force - horizontalVelocity, ForceMode.Impulse);
+            rb.AddForce(force, ForceMode.Impulse);
         }
-        Debug.Log(rb.linearVelocity.magnitude);
     }
 
     private void OnMovementAction(InputAction.CallbackContext context)
