@@ -6517,6 +6517,34 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2054545329}
     - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: AI_D_Importance
+      value: 5.58
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: HideSensitivity
+      value: 0.414
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: AI_MH_Importance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: AI_OD_Importance
+      value: 3.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: AI_ZS_Importance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: AI_Dot_Importance
+      value: 9.84
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
+      propertyPath: MinPlayerDistance
+      value: 54.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334488957393253475, guid: 632192473ecdfa44fa78235f89162279, type: 3}
       propertyPath: simulationControl
       value: 
       objectReference: {fileID: 1719516090}
