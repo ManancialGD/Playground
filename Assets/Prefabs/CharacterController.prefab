@@ -410,6 +410,7 @@ MonoBehaviour:
   maxRunSpeed: 5
   acceleration: 9
   deceleration: 15
+  counterStrafingForce: 0
   aimAction: {fileID: 410532493584127312, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
   runAction: {fileID: -7471211009204490832, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
   movementAction: {fileID: -1680190386980627800, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
@@ -1081,7 +1082,6 @@ GameObject:
   - component: {fileID: 40591883521949888}
   - component: {fileID: 4173984411960237791}
   - component: {fileID: 7315376074184790748}
-  - component: {fileID: 2194928519091820294}
   m_Layer: 0
   m_Name: Flashlight
   m_TagString: Untagged
@@ -1311,22 +1311,6 @@ MonoBehaviour:
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 512
   m_ObsoleteContactShadows: 0
---- !u!114 &2194928519091820294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6225715592402438247}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22df12ab23730d0488fe13336c4ca0ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxIntensity: 1000
-  minIntensity: 25
-  maxDistance: 10
-  minDistance: 5
 --- !u!1 &6542754187770170086
 GameObject:
   m_ObjectHideFlags: 0
