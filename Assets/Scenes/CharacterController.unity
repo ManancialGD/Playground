@@ -3182,7 +3182,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4173984411960237791, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: m_Intensity
-      value: 30689.621
+      value: 112.94148
       objectReference: {fileID: 0}
     - target: {fileID: 4173984411960237791, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: m_LightUnit
@@ -3706,6 +3706,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4056659954985230331, guid: dc75ab864f073d743a946c69da662417, type: 3}
+    - {fileID: 2194928519091820294, guid: dc75ab864f073d743a946c69da662417, type: 3}
     m_RemovedGameObjects:
     - {fileID: 7293246382681785895, guid: dc75ab864f073d743a946c69da662417, type: 3}
     m_AddedGameObjects:
