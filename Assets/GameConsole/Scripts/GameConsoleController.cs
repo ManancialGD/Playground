@@ -5,6 +5,9 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using System.IO;
+using UnityEngine.Rendering;
+using System.Linq;
+using UnityEngine.Rendering.HighDefinition;
 
 namespace GameConsole
 {
@@ -49,7 +52,6 @@ namespace GameConsole
             // Initialize the commands dictionary with placeholder commands.
             commands = new Dictionary<string, CommandDefinition>
             {
-                // Example 'help' command which lists all available commands
                 {
                     "help",
                     new CommandDefinition(
@@ -105,6 +107,21 @@ namespace GameConsole
                         arguments: new CommandArgument[]
                         {
                             new ("value", typeof(bool))
+                        }
+                    )
+                },
+                {
+                    "toggle_ambient_light", new CommandDefinition(ToggleAmbientLight,
+                        help: "Toggles the ambient light in the scene.",
+                        arguments: new CommandArgument[]{}
+                    )
+                },
+                {
+                    "change_ambient_light_multiplier", new CommandDefinition(ChangeAmbientMultiplier,
+                        help: "Change the ambient light multiplier.",
+                        arguments: new CommandArgument[]
+                        {
+                            new("multiplier", typeof(float))
                         }
                     )
                 },
@@ -231,6 +248,52 @@ namespace GameConsole
                     // Log each command's name and usage description.
                     Log($"{commandText}");
                 }
+            }
+        }
+
+        private void ToggleAmbientLight(params object[] args)
+        {
+            Volume globalVolume = FindObjectsByType<Volume>(FindObjectsSortMode.None)
+                .First(v => v.isGlobal);
+            if (globalVolume != null)
+            {
+                if (globalVolume.profile.TryGet(out VisualEnvironment visualEnvironment))
+                {
+                    visualEnvironment.active = !visualEnvironment.active;
+
+                    Log($"Visual Environment is now: {(visualEnvironment.active ? "enabled" : "disabled")}.");
+
+                }
+            }
+            else
+            {
+                Log("No global volume found.");
+            }
+        }
+
+        private void ChangeAmbientMultiplier(params object[] args)
+        {
+            if (args != null && args.Length > 0 && args[0] is float multiplier)
+            {
+                Volume globalVolume = FindObjectsByType<Volume>(FindObjectsSortMode.None)
+                    .First(v => v.isGlobal);
+                if (globalVolume != null)
+                {
+                    if (globalVolume.profile.TryGet(out IndirectLightingController indirectLightingController))
+                    {
+                        indirectLightingController.indirectDiffuseLightingMultiplier.value = multiplier;
+
+                        Log($"Indirect light intensity set to: {multiplier}.");
+                    }
+                }
+                else
+                {
+                    Log("No global volume found.");
+                }
+            }
+            else
+            {
+                Log("Invalid value. Expected a number.");
             }
         }
 

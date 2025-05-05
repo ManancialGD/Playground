@@ -9,7 +9,6 @@ public class CharacterShooter : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float maxDistance = 25f;
     [SerializeField] private float cameraSafeDistance = 2;
-    [SerializeField] private float lerpTime = 15;
     [SerializeField] private float shootRate = .15f;
     [SerializeField] private float bulletSpeed = 250;
 
@@ -35,18 +34,15 @@ public class CharacterShooter : MonoBehaviour
 
     public void UpdateAim()
     {
-        if (Physics.Raycast(cam.position, cam.forward * cameraSafeDistance, out RaycastHit hit, maxDistance))
+        if (Physics.Raycast(cam.position + cam.forward * cameraSafeDistance, cam.forward, out RaycastHit hit, maxDistance))
         {
             if (hit.collider.gameObject.layer == playerLayer) return;
 
             if (Vector3.Distance(transform.position, hit.point) > 1 ||
                 Vector3.Dot(orientation.forward, (transform.position - hit.point).normalized) < -.5f)
-                if (hit.collider.gameObject.layer == enemiesLayer)
                     aimTarget.position = hit.point;
-                else
-                    aimTarget.position = Vector3.Lerp(aimTarget.position, hit.point, Time.deltaTime * lerpTime);
             else
-                aimTarget.position = Vector3.Lerp(aimTarget.position, cam.forward * maxDistance, Time.deltaTime * lerpTime);
+                aimTarget.position =cam.forward * maxDistance;
         }
         else
             aimTarget.position = cam.forward * maxDistance;
@@ -93,7 +89,7 @@ public class CharacterShooter : MonoBehaviour
     {
         canShoot = true;
     }
-    
+
     private void Shoot()
     {
         GameObject bullet = bulletPool.GetObject();

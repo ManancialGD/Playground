@@ -1017,11 +1017,11 @@ MonoBehaviour:
   commandInputField: {fileID: 4717150067852239256}
   logText: {fileID: 59250394233123378}
   canvas: {fileID: 56426722857194054}
-  openConsoleAction: {fileID: 4495252449788452028, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  consoleOpened:
+  openConsoleAction: {fileID: 4495252449788452028, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
+  ConsoleOpened:
     m_PersistentCalls:
       m_Calls: []
-  consoleClosed:
+  ConsoleClosed:
     m_PersistentCalls:
       m_Calls: []
 --- !u!1 &8635972397463990080
