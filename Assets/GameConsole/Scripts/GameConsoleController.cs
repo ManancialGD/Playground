@@ -8,6 +8,7 @@ using System.IO;
 using UnityEngine.Rendering;
 using System.Linq;
 using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.SceneManagement;
 
 namespace GameConsole
 {
@@ -125,6 +126,15 @@ namespace GameConsole
                         }
                     )
                 },
+                {
+                    "change_scene", new CommandDefinition(ChangeScene,
+                        help: "Change the current scene.",
+                        arguments: new CommandArgument[]
+                        {
+                            new("scene_name", typeof(string))
+                        }
+                    )
+                }
             };
 
             // Check if references are properly assigned.
@@ -213,8 +223,8 @@ namespace GameConsole
             }
             catch (Exception ex)
             {
-                Log("An error occurred.");
-                Debug.LogError($"Error: {ex.Message}"); // Log errors during command execution.
+                Log($"Error: {ex.Message}");
+                Debug.LogError($"Error: {ex.Message}");
             }
         }
 
@@ -294,6 +304,26 @@ namespace GameConsole
             else
             {
                 Log("Invalid value. Expected a number.");
+            }
+        }
+
+        private void ChangeScene(params object[] args)
+        {
+            if (args != null && args.Length > 0 && args[0] is string sceneName)
+            {
+                if (Application.CanStreamedLevelBeLoaded(sceneName))
+                {
+                    Log($"Scene changed to: {sceneName}.");
+                    SceneManager.LoadScene(sceneName);
+                }
+                else
+                {
+                    Log($"Scene '{sceneName}' is not in the build settings or does not exist.");
+                }
+            }
+            else
+            {
+                Log("Invalid value. Expected a scene name.");
             }
         }
 

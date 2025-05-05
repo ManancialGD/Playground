@@ -43,12 +43,17 @@ namespace CharacterController
 
             if (hits.Length > 0)
             {
-                RaycastHit closestHit = hits.OrderBy(h => h.distance).First();
-                Interactable interactableObject = closestHit.collider.GetComponent<Interactable>();
+                var interactables = hits.Select(h => h.collider.GetComponent<Interactable>())
+                    .Where(i => i != null)
+                    .ToList();
 
-                if (interactableObject != null)
+                Interactable closestInteractable = interactables
+                    .OrderBy(i => Vector3.Distance(transform.position, i.transform.position))
+                    .First();
+
+                if (closestInteractable != null)
                 {
-                    interactableObject.Interact();
+                    closestInteractable.Interact();
                 }
             }
         }
