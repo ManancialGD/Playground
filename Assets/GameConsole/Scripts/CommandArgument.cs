@@ -1,6 +1,6 @@
 using System;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// Represents an argument for a command, including its name, type, and optional default value.

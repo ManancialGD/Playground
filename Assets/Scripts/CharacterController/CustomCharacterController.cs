@@ -1,7 +1,7 @@
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using GameConsole;
+using DevConsole;
 
 [RequireComponent(typeof(CharacterView)),
 RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
@@ -25,7 +25,7 @@ public class CustomCharacterController : MonoBehaviour
     [SerializeField] private CinemachineCamera aimCamera;
     [SerializeField] private Rigidbody rb;
 
-    private GameConsoleController gameConsole;
+    private DevConsoleController gameConsole;
 
     private bool runningInput = false;
 
@@ -42,21 +42,23 @@ public class CustomCharacterController : MonoBehaviour
         aimCamera.gameObject.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     private void Update()
     {
         if (CharacterState != CharacterStates.Console)
+        {
             characterView.UpdateView();
-
-        characterSkin.UpdateRotation();
-        characterSkin.UpdateAnimation();
-        characterShooter.UpdateAim();
+            characterSkin.UpdateRotation();
+            characterSkin.UpdateAnimation();
+            characterShooter.UpdateAim();
+        }
     }
 
     private void FixedUpdate()
     {
+        if (CharacterState == CharacterStates.Console) return;
+
         if (CharacterState == CharacterStates.Aimming)
             characterMovement.UpdateAimMovement();
         else if (CharacterState == CharacterStates.Defaulft)
@@ -77,7 +79,7 @@ public class CustomCharacterController : MonoBehaviour
             characterShooter = GetComponent<CharacterShooter>();
 
         if (gameConsole == null)
-            gameConsole = FindAnyObjectByType<GameConsoleController>();
+            gameConsole = FindAnyObjectByType<DevConsoleController>();
         if (rb == null)
             rb = GetComponent<Rigidbody>();
     }
@@ -155,6 +157,7 @@ public class CustomCharacterController : MonoBehaviour
     private void OnConsoleOpened()
     {
         CharacterState = CharacterStates.Console;
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void OnConsoleClosed()
@@ -163,5 +166,6 @@ public class CustomCharacterController : MonoBehaviour
             aimCamera.gameObject.SetActive(false);
 
         CharacterState = CharacterStates.Defaulft;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }

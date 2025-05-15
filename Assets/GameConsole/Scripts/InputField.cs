@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// Custom InputField class that handles text input, caret movement, selection, and events.

@@ -4,11 +4,11 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// Handles the auto-completion system for a command input field, providing suggestions
-    /// based on commands available in the GameConsole.
+    /// based on commands available in the DameConsole.
     /// </summary>
     public class AutoCompletion : MonoBehaviour
     {
@@ -30,33 +30,33 @@ namespace GameConsole
         // Index of the currently selected suggestion in the list.
         private int currentIndex = -1; // Current highlighted suggestion
 
-        // Reference to the GameConsole instance to access its commands.
-        [SerializeField] private GameConsoleController gameConsole;
+        // Reference to the DevConsole instance to access its commands.
+        [SerializeField] private DevConsoleController devConsole;
 
         /// <summary>
-        /// Initializes the auto-completion system and populates the suggestions from the GameConsole.
+        /// Initializes the auto-completion system and populates the suggestions from the DevConsole.
         /// </summary>
         private void Start()
         {
-            if (gameConsole == null)
+            if (devConsole == null)
             {
-                Debug.LogError("GameConsole reference is not set.");
+                Debug.LogError("DevConsol reference is not set.");
                 return;
             }
             allSuggestions = new Dictionary<string, string[]>(); // Initialize the dictionary to store suggestions
 
-            // Extract commands and parameters from GameConsole's commands
+            // Extract commands and parameters from devConsol's commands
             PopulateSuggestionsFromCommands();
         }
 
         /// <summary>
-        /// Populates the <see cref="allSuggestions"/> dictionary with commands and their parameters from the GameConsole.
+        /// Populates the <see cref="allSuggestions"/> dictionary with commands and their parameters from the DevConsole.
         /// </summary>
         private void PopulateSuggestionsFromCommands()
         {
             allSuggestions.Clear(); // Clear any previous suggestions
 
-            foreach (var command in gameConsole.Commands)
+            foreach (var command in devConsole.Commands)
             {
                 var commandName = command.Key; // The command name
                 var parameters = command.Value.Arguments.Select(arg => arg.Name).ToArray(); // Get parameter names

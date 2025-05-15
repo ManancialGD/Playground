@@ -10,7 +10,7 @@ using System.Linq;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// A simple in-game console system that handles user inputs, processes commands, 
@@ -23,7 +23,7 @@ namespace GameConsole
     /// and logs messages in a <see cref="TMP_Text"/> UI element. It supports dynamic
     /// command execution with arguments and provides helpful logs for feedback.
     /// </summary>
-    public class GameConsoleController : MonoBehaviour
+    public class DevConsoleController : MonoBehaviour
     {
         // Serialized fields
         [Header("Player Settings")]

@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// Represents a single suggestion in the user interface. This class is used

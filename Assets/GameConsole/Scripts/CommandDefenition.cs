@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace GameConsole
+namespace DevConsole
 {
     /// <summary>
     /// Represents a command within the console, consisting of an action (method) to execute 

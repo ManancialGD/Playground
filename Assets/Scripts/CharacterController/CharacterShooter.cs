@@ -3,6 +3,7 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.VFX;
 
 public class CharacterShooter : MonoBehaviour
 {
@@ -21,15 +22,19 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask enemiesLayer;
     [SerializeField] private ObjectPool bulletPool;
+    [SerializeField] private VisualEffect muzzleFlash;
 
     private bool canShoot = true;
     public event Action ShootEvent;
     private Coroutine shootCoroutine;
+    private CustomCharacterController characterController;
 
     private void Awake()
     {
         if (cam == null)
             cam = FindAnyObjectByType<CinemachineBrain>().transform;
+        if (characterController == null)
+            characterController = GetComponent<CustomCharacterController>();
     }
 
     public void UpdateAim()
@@ -62,6 +67,8 @@ public class CharacterShooter : MonoBehaviour
 
     private void OnShootActionPerformed(InputAction.CallbackContext context)
     {
+        if (characterController?.CharacterState == CharacterStates.Console) return;
+        
         shootCoroutine = StartCoroutine(ShootCoroutine());
     }
 
@@ -101,6 +108,7 @@ public class CharacterShooter : MonoBehaviour
             rb.angularVelocity = Vector3.zero;
             rb.AddForce((aimTarget.position - gunTip.position).normalized * bulletSpeed, ForceMode.Impulse);
             ShootEvent?.Invoke();
+            if (muzzleFlash) muzzleFlash.Play();
         }
         else
         {
