@@ -40,7 +40,7 @@ namespace DevConsole
         {
             if (devConsole == null)
             {
-                Debug.LogError("DevConsol reference is not set.");
+                Debug.LogError("DevConsole reference is not set.");
                 return;
             }
             allSuggestions = new Dictionary<string, string[]>(); // Initialize the dictionary to store suggestions

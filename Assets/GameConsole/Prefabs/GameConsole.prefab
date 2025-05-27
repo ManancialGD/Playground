@@ -357,7 +357,7 @@ MonoBehaviour:
   suggestionItemPrefab: {fileID: 7000968776281384866, guid: 50127a87a3e080b42860234ec622db7e, type: 3}
   suggestionContainer: {fileID: 8632258370057144182}
   inputFieldHandler: {fileID: 4717150067852239256}
-  gameConsole: {fileID: 1420850467778509425}
+  devConsole: {fileID: 1420850467778509425}
 --- !u!114 &3121787465334255235
 MonoBehaviour:
   m_ObjectHideFlags: 0
