@@ -1,3 +1,4 @@
+using System.Collections;
 using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,7 +11,7 @@ public class CharacterMovement
     private Transform orientation;
     private float maxWalkSpeed = 8f;
     private float maxRunSpeed = 12f;
-    
+
     private InputActionReference movementAction;
 
     private Vector2 movementInput;
@@ -33,6 +34,14 @@ public class CharacterMovement
 
         movementAction.action.performed += OnMovementAction;
         movementAction.action.canceled += OnMovementAction;
+    }
+
+
+    private IEnumerator Start()
+    {
+        yield return null;
+
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
     public void UpdateWalkMovement()

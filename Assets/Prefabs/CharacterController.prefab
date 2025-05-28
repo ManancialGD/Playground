@@ -1816,7 +1816,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 1
+  m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!136 &3471329188198148036
@@ -4855,8 +4855,8 @@ VisualEffect:
   m_GameObject: {fileID: 5291049587797002243}
   m_Enabled: 1
   m_Asset: {fileID: 8926484042661614526, guid: ee2765a0c5972c44bad4ffd43572c57a, type: 3}
-  m_InitialEventName: OnPlay
-  m_InitialEventNameOverriden: 0
+  m_InitialEventName: 
+  m_InitialEventNameOverriden: 1
   m_StartSeed: 0
   m_ResetSeedOnPlay: 1
   m_AllowInstancing: 1
