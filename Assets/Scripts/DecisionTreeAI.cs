@@ -1,73 +1,121 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace DecisionTreeAI
 {
-    public abstract class Node
-    {
-        public int history = -2;
-        public Func<float, int> Action = null;
-
-        public abstract NodeStatus Execute(float input); // 0 - 1
-
-        public Node(Func<float, int> action = null) => Action = action;
-    }
-
+    // Enumeração segura para status dos nós
     public enum NodeStatus
     {
         Failure,
         Success,
     }
 
-    public class ControlNode : Node
+    // Classe base abstrata para todos os nós
+    public abstract class Node
     {
-        protected List<Node> children = new List<Node>();
+        public IReadOnlyList<Node> Children => _children.AsReadOnly();
+        private protected readonly List<Node> _children = new();
 
-        private Func<float, int> decisionFunction; // Função que escolhe o filho baseado no input
+        // História de execução para debug
+        public NodeStatus LastStatus { get; private protected set; } = NodeStatus.Failure;
+        public int LastChildIndex { get; private protected set; } = -1;
 
-        public Func<float, int> GetDecisionFunction() => decisionFunction;
-
-        public ControlNode(Func<float, int> df)
+        public virtual Node AddChild(Node node)
         {
-            decisionFunction = df;
-            Action = df;
+            _children.Add(node ?? throw new ArgumentNullException(nameof(node)));
+            return this;
         }
 
-        public void AddChild(Node node) => children.Add(node);
+        public abstract NodeStatus Execute(float input);
+    }
+
+    // Nó de controle com sistema de decisão seguro
+    public sealed class ControlNode : Node
+    {
+        private readonly Func<float, int> _decisionFunction;
+        public Func<float, int> DecisionFunction => _decisionFunction;
+
+        public ControlNode(Func<float, int> decisionFunction)
+        {
+            _decisionFunction =
+                decisionFunction ?? throw new ArgumentNullException(nameof(decisionFunction));
+        }
 
         public override NodeStatus Execute(float input)
         {
-            if (children.Count == 0)
-                return NodeStatus.Failure;
+            try
+            {
+                int childIndex = _decisionFunction(input);
 
-            int selectedIndex = decisionFunction(input); // Escolhe qual filho executar
-            if (selectedIndex < 0 || selectedIndex >= children.Count)
-                return NodeStatus.Failure;
+                // Validação rigorosa do índice
+                if (childIndex < 0 || childIndex >= _children.Count)
+                {
+                    throw new InvalidNodeIndexException(childIndex, _children.Count);
+                }
 
-            history = selectedIndex;
-            return children[selectedIndex].Execute(input);
+                LastChildIndex = childIndex;
+                NodeStatus result = _children[childIndex].Execute(input);
+                LastStatus = result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DecisionTreeLogger.LogError(ex);
+                LastStatus = NodeStatus.Failure;
+                return NodeStatus.Failure;
+            }
         }
     }
 
-    public class ExecutionNode : Node
+    // Nó de execução com validação de retorno
+    public sealed class ExecutionNode : Node
     {
-        public ExecutionNode(Func<float, int> action = null)
-            : base(action) { }
+        private readonly Func<float, NodeStatus> _action;
+        public Func<float, NodeStatus> Action => _action;
+
+        public ExecutionNode(Func<float, NodeStatus> action)
+        {
+            _action = action ?? throw new ArgumentNullException(nameof(action));
+        }
 
         public override NodeStatus Execute(float input)
         {
-            int result = Action(input);
-            history = result;
-            Debug.WriteLine("ExecutionNode(Execute): " + result);
-            return (NodeStatus)result; // Converte o retorno da action para NodeStatus
+            try
+            {
+                NodeStatus result = _action(input);
+                LastStatus = result;
+                return result;
+            }
+            catch (Exception ex)
+            {
+                DecisionTreeLogger.LogError(ex);
+                LastStatus = NodeStatus.Failure;
+                return NodeStatus.Failure;
+            }
         }
     }
 
-    public class NodeInput
+    // Exceção customizada para erros de índice
+    public sealed class InvalidNodeIndexException : Exception
     {
-        public float Value { get; }
+        public int InvalidIndex { get; }
+        public int ValidRange { get; }
 
-        public NodeInput(float value) => Value = value;
+        public InvalidNodeIndexException(int index, int maxIndex)
+            : base($"Índice inválido: {index}. Intervalo permitido: 0-{maxIndex - 1}")
+        {
+            InvalidIndex = index;
+            ValidRange = maxIndex;
+        }
+    }
+
+    // Logger customizado para a árvore
+    public static class DecisionTreeLogger
+    {
+        public static void LogError(Exception ex)
+        {
+            // Implementação de logging (Unity Debug, arquivo, etc.)
+            UnityEngine.Debug.LogError($"[DecisionTree] Error: {ex.Message}");
+        }
     }
 }

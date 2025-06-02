@@ -18,10 +18,16 @@ public class CharacterMovement
     private Vector3 moveDir;
     private Rigidbody rb;
 
-    public CharacterMovement(Rigidbody rb,
-                            float acceleration, float deceleration, float counterStrafingForce,
-                            Transform orientation, InputActionReference movementAction,
-                            float maxWalkSpeed = 8f, float maxRunSpeed = 12f)
+    public CharacterMovement(
+        Rigidbody rb,
+        float acceleration,
+        float deceleration,
+        float counterStrafingForce,
+        Transform orientation,
+        InputActionReference movementAction,
+        float maxWalkSpeed = 8f,
+        float maxRunSpeed = 12f
+    )
     {
         this.rb = rb;
         this.acceleration = acceleration;
@@ -35,7 +41,6 @@ public class CharacterMovement
         movementAction.action.performed += OnMovementAction;
         movementAction.action.canceled += OnMovementAction;
     }
-
 
     private IEnumerator Start()
     {
@@ -63,7 +68,11 @@ public class CharacterMovement
     {
         if (Mathf.Abs(movementInput.x) > 1e-5f || Mathf.Abs(movementInput.y) > 1e-5f)
         {
-            Vector3 flatForward = new Vector3(orientation.forward.x, 0, orientation.forward.z).normalized;
+            Vector3 flatForward = new Vector3(
+                orientation.forward.x,
+                0,
+                orientation.forward.z
+            ).normalized;
             Vector3 flatRight = new Vector3(orientation.right.x, 0, orientation.right.z).normalized;
 
             moveDir = (flatForward * movementInput.y + flatRight * movementInput.x).normalized;
@@ -107,6 +116,7 @@ public class CharacterMovement
     {
         Vector2 v = context.ReadValue<Vector2>();
 
-        if (v != null) movementInput = v;
+        if (v != null)
+            movementInput = v;
     }
 }

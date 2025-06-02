@@ -1,55 +1,54 @@
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
 public class VisualizeAlgorithms : MonoBehaviour
 {
     [SerializeField]
-    private SimulationControl SimulationControl;
+    private EnemyAI EntityAI;
 
     [SerializeField]
-    private EnemyAI EntityAI;
-    ScoresDatabase ScoresDatabase;
-    ScoresDatabase HeuristicDatabase;
+    SimulationControl simulationControl;
+
+    bool started = false;
 
     public void Start()
     {
-        ScoresDatabase = SimulationControl.ScoresDatabase;
-        HeuristicDatabase = SimulationControl.HeuristicDatabase;
+        StartVisualization();
     }
 
-# if UNITY_EDITOR
+    void StartVisualization() => StartCoroutine(WaitForDatabase());
+
+    IEnumerator WaitForDatabase()
+    {
+        yield return new WaitForSeconds(0.2f); // Wait for the game to start
+        started = true;
+    }
+
+#if UNITY_EDITOR
     public void OnDrawGizmos()
     {
-        HidePoint targetPoint = EntityAI.TargetPoint;
-        if (targetPoint == null)
-            return;
-        Gizmos.color = Color.green;
-        if (!EntityAI.BeingSeen)
-            Gizmos.color = Color.red;
-
-        Gizmos.DrawLine(EntityAI.transform.position, EntityAI.Player.transform.position);
-
-        if (
-            EntityAI.Colliders.Length <= 0
-            || EntityAI.Colliders[0] == null
-            || EntityAI.HidingScores.Scores.Count <= 0
-            || !EntityAI.HidingScores.HasPoint(targetPoint)
-        )
+        if (!Application.isPlaying)
             return;
 
-        EntityAI.HidingScores.Scores.Values.ToList().OrderBy(x => x);
-        foreach (HidePoint hidePoint in EntityAI.HidingScores.Scores.Keys)
+        if (!started)
+            return;
+
+        var scores = simulationControl.ScoresDatabase.Scores;
+        if (scores == null || scores.Count == 0)
+            return;
+
+        float min = scores.Values.Min();
+        float max = scores.Values.Max();
+
+        for (int i = 0; i < scores.Count; i++)
         {
-            if (hidePoint.Position == Vector3.zero || !EntityAI.HidingScores.HasPoint(hidePoint))
-                continue;
-
-            float scoreColor = Mathf.Clamp01(
-                EntityAI.HidingScores.Scores[hidePoint] / EntityAI.HidingScores.Scores[targetPoint]
-            );
-            Gizmos.color = new Color(1 - scoreColor, scoreColor, 0);
-
-            Gizmos.DrawLine(EntityAI.transform.position, hidePoint.Position);
+            var spot = scores.Keys.ElementAt(i);
+            float value = scores.Values.ElementAt(i);
+            Gizmos.color = new Color(1f - (value - min) / (max - min), value / max, 0f);
+            Gizmos.DrawLine(simulationControl.TrainingEntity.transform.position, spot.Position);
         }
     }
+
 # endif
 }

@@ -23,9 +23,6 @@ public class EnemyAI : MonoBehaviour
     EnemyState ForceState = EnemyState.None;
     public EnemyAI Player;
 
-    [SerializeField]
-    public LayerMask HidableLayers;
-
     public EnemyLineOfSightChecker LineOfSightChecker;
 
     [HideInInspector]
@@ -71,26 +68,29 @@ public class EnemyAI : MonoBehaviour
     private float baseUpdateFrequency;
 
     [Header("AI Parameters")]
-    [Range(0f, 10f)]
-    public float AI_D_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_D_Importance = 0;
 
-    [Range(0f, 10f)]
-    public float AI_AD_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_AD_Importance = 0;
 
-    [Range(0f, 10f)]
-    public float AI_OD_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_OD_Importance = 0;
 
-    [Range(0f, 10f)]
-    public float AI_Dot_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_Dot_Importance = 0;
 
-    [Range(0f, 10f)]
-    public float AI_MH_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_MH_Importance = 0;
 
-    [Range(0f, 10f)]
-    public float AI_ZS_Importance = 1;
+    [Range(0f, 1f)]
+    public float AI_ZS_Importance = 0;
+
+    [Range(0f, 1f)]
+    public float AI_EX_Importance = 0;
 
     private Coroutine MovementCoroutine;
-    public Collider[] Colliders { get; private set; } = new Collider[40]; // more is less performant, but more options
+    public Collider[] Colliders { get; private set; } = new Collider[100]; // more is less performant, but more options
 
     private List<HidePoint> DetectedPositions = new List<HidePoint>(); // current detected positions (not all)
     public HidePoint TargetPoint { get; private set; } = null;
@@ -100,7 +100,6 @@ public class EnemyAI : MonoBehaviour
 
     [SerializeField]
     SimulationControl simulationControl;
-    float baseVelocity = 0;
 
     public ScoresDatabase HidingScores { get; private set; }
 
@@ -115,24 +114,16 @@ public class EnemyAI : MonoBehaviour
         StartCoroutine(UpdatePlaytestData());
 
         baseUpdateFrequency = UpdateFrequency;
-        UpdateFrequency /= simulationControl.SimulationSpeed;
-
-        baseVelocity = Agent.speed;
 
         HidingScores = simulationControl.ScoresDatabase;
         historyDistanceFromEnemy = Vector3.Distance(transform.position, Player.transform.position);
+        GetAllMapPoints(100f, 1f);
     }
 
     private void FixedUpdate()
     {
-        // Simulation Control
-        Agent.avoidancePriority = (int)
-            Mathf.Clamp(50f / simulationControl.SimulationSpeed, 0f, 99f);
-        UpdateFrequency = baseUpdateFrequency / simulationControl.SimulationSpeed;
-        Agent.speed = baseVelocity * simulationControl.SimulationSpeed;
-        Agent.acceleration = baseVelocity * simulationControl.SimulationSpeed * 5f;
-        Agent.angularSpeed = baseVelocity * simulationControl.SimulationSpeed * 100f;
-
+        if (Time.timeScale != simulationControl.SimulationSpeed)
+            Time.timeScale = simulationControl.SimulationSpeed;
         UpdateAI();
 
         //Vector3 direction = (Player.transform.position - transform.position).normalized;
@@ -163,243 +154,26 @@ public class EnemyAI : MonoBehaviour
 
         while (true)
         {
-            if (!Agent.enabled || !Agent.isOnNavMesh)
-            {
-                Debug.LogError("NavMeshAgent está desativado ou fora do NavMesh!");
-                yield break;
-            }
-
-            for (int i = 0; i < Colliders.Length; i++)
-            {
-                Colliders[i] = null;
-            }
-
-            int hits = Physics.OverlapSphereNonAlloc(
-                Agent.transform.position,
-                LineOfSightChecker.Collider.radius,
-                Colliders,
-                HidableLayers
-            );
-
-            int hitReduction = 0;
-            for (int i = 0; i < hits; i++)
-            {
-                if (!Colliders[i] || Colliders[i] == null)
-                    continue;
-                if (Colliders[i] == null
-                //|| Vector3.Distance(Colliders[i].transform.position, Target.position)
-                //  < MinPlayerDistance / 2
-                //|| Colliders[i].bounds.size.y < MinObstacleHeight
-                )
-                {
-                    Colliders[i] = null;
-                    hitReduction++;
-                }
-            }
-            hits -= hitReduction;
-
-            System.Array.Sort(Colliders, ColliderArraySortComparer);
-            DetectedPositions = new List<HidePoint>();
-
-            int additionalHits = 0;
-
-            for (int i = 0; i < hits; i++)
-            {
-                if (Colliders[i] == null)
-                    continue;
-
-                if (
-                    NavMesh.SamplePosition(
-                        Colliders[i].transform.position,
-                        out NavMeshHit hit,
-                        2f,
-                        Agent.areaMask
-                    )
-                )
-                {
-                    if (!NavMesh.FindClosestEdge(hit.position, out hit, Agent.areaMask))
-                    {
-                        Debug.LogError(
-                            $"Não foi possível encontrar a borda do NavMesh em {hit.position}"
-                        );
-                        continue;
-                    }
-
-                    Vector3 directionToPlayer = (Target.position - hit.position).normalized;
-                    float dot = Vector3.Dot(hit.normal, directionToPlayer);
-
-                    if (dot > HideSensitivity) // Se não estiver bem escondido, tenta outro ponto
-                    {
-                        continue;
-                    }
-
-                    GameObject wallObj = GetGameObjectFromNavMeshHit(hit);
-                    float wallSize = GetWallWidth(wallObj.transform, transform.position);
-                    if (wallSize >= 30f)
-                    {
-                        additionalHits += 2;
-                        Vector3 wDir = (wallObj.transform.position - transform.position).normalized;
-                        HidePoint leftPosition;
-                        leftPosition = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position - new Vector3(wallSize / 4f, 0f, 0f)
-                                : hit.position - new Vector3(0f, 0f, wallSize / 4f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        HidePoint rightPosition;
-                        rightPosition = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position + new Vector3(wallSize / 4f, 0f, 0f)
-                                : hit.position + new Vector3(0f, 0f, wallSize / 4f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        DetectedPositions.Add(leftPosition);
-                        DetectedPositions.Add(rightPosition);
-                        UpdateDatabases(rightPosition);
-                        UpdateDatabases(leftPosition);
-                    }
-                    else if (wallSize >= 60f)
-                    {
-                        additionalHits += 4;
-                        Vector3 wDir = (wallObj.transform.position - transform.position).normalized;
-                        HidePoint leftPosition1;
-                        leftPosition1 = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position - new Vector3(wallSize / 4f, 0f, 0f)
-                                : hit.position - new Vector3(0f, 0f, wallSize / 4f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        HidePoint leftPosition2;
-                        leftPosition2 = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position - new Vector3(wallSize / 2.2f, 0f, 0f)
-                                : hit.position - new Vector3(0f, 0f, wallSize / 2.2f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        HidePoint rightPosition1;
-                        rightPosition1 = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position + new Vector3(wallSize / 4f, 0f, 0f)
-                                : hit.position + new Vector3(0f, 0f, wallSize / 4f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        HidePoint rightPosition2;
-                        rightPosition2 = new HidePoint(
-                            Mathf.Abs(Vector3.Dot(wallObj.transform.right, wDir))
-                            > Mathf.Abs(Vector3.Dot(wallObj.transform.forward, wDir))
-                                ? hit.position + new Vector3(wallSize / 2.2f, 0f, 0f)
-                                : hit.position + new Vector3(0f, 0f, wallSize / 2.2f),
-                            simulationControl.CurrentConfig,
-                            this,
-                            simulationControl.ScoresDatabase,
-                            simulationControl
-                        );
-
-                        DetectedPositions.Add(leftPosition1);
-                        DetectedPositions.Add(rightPosition1);
-                        DetectedPositions.Add(leftPosition2);
-                        DetectedPositions.Add(rightPosition2);
-
-                        UpdateDatabases(leftPosition1, 0);
-                        UpdateDatabases(rightPosition1, 0);
-                        UpdateDatabases(leftPosition2, 0);
-                        UpdateDatabases(rightPosition2, 0);
-                    }
-
-                    HidePoint centerPoint = new HidePoint(
-                        hit.position,
-                        simulationControl.CurrentConfig,
-                        this,
-                        simulationControl.ScoresDatabase,
-                        simulationControl
-                    );
-                    DetectedPositions.Add(centerPoint);
-                    UpdateDatabases(centerPoint, 0);
-                }
-                else
-                {
-                    Debug.LogError(
-                        $"Não foi possível encontrar NavMesh próximo ao objeto {Colliders[i].name}"
-                    );
-                }
-            }
-
-            hits += additionalHits;
-
-            float score = 0;
-            HidePoint finalPoint = GetBetterHidePoint(out score);
-
-            if (finalPoint == null || finalPoint.Position == null) // no point found
+            if (simulationControl.ScoresDatabase.Scores.Count <= 0)
             {
                 yield return Wait;
                 continue;
             }
-
-            if (finalPoint.Position != Vector3.zero)
+            TargetPoint = simulationControl.CurrentBestPoint;
+            NavMeshPath path = null;
+            path = FindNormalPath(transform.position, TargetPoint.Position);
+            if (path != null)
             {
-                TargetPoint = finalPoint;
-                NavMeshPath path = null;
-                path = GetSafeNavMeshPath(transform.position, finalPoint.Position);
-                if (path != null)
-                {
-                    Agent.ResetPath();
-                    Agent.SetPath(path);
-                }
-                else
-                {
-                    Agent.ResetPath();
-                    Agent.SetDestination(finalPoint.Position);
-                }
+                Agent.ResetPath();
+                Agent.SetPath(path);
+            }
+            else
+            {
+                Agent.ResetPath();
+                Agent.SetDestination(TargetPoint.Position);
             }
 
             yield return Wait;
-        }
-    }
-
-    public int ColliderArraySortComparer(Collider A, Collider B)
-    {
-        if (A == null && B != null)
-        {
-            return 1;
-        }
-        else if (A != null && B == null)
-        {
-            return -1;
-        }
-        else if (A == null && B == null)
-        {
-            return 0;
-        }
-        else
-        {
-            return Vector3
-                .Distance(Agent.transform.position, A.transform.position)
-                .CompareTo(Vector3.Distance(Agent.transform.position, B.transform.position));
         }
     }
 
@@ -434,13 +208,19 @@ public class EnemyAI : MonoBehaviour
                 return 1; // attack
         }
 
-        ExecutionNode defenseNode = new ExecutionNode(Defense);
-        root.AddChild(defenseNode);
+        ExecutionNode defenseNode = new ExecutionNode(input =>
+        {
+            Defense(input);
+            return NodeStatus.Success;
+        });
 
-        ExecutionNode attackNode = new ExecutionNode(Attack);
-        root.AddChild(attackNode);
+        ExecutionNode attackNode = new ExecutionNode(input =>
+        {
+            return Attack(input);
+        });
 
-        int Attack(float value)
+        root.AddChild(defenseNode).AddChild(attackNode);
+        NodeStatus Attack(float value)
         {
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
@@ -448,16 +228,16 @@ public class EnemyAI : MonoBehaviour
             //Agent.SetDestination(Player.transform.position);
             MovementCoroutine = StartCoroutine(AttackStealthMove(Player.transform));
 
-            return 1;
+            return NodeStatus.Success;
         }
 
-        int Defense(float value)
+        NodeStatus Defense(float value)
         {
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
             MovementCoroutine = StartCoroutine(Hide(Player.transform));
 
-            return 1;
+            return NodeStatus.Success;
         }
 
         AI_LastUpdate = Time.time;
@@ -479,7 +259,7 @@ public class EnemyAI : MonoBehaviour
                         Player.transform.rotation.eulerAngles
                     )
                 ) * 15f;
-            float currentPointScore = TargetPoint != null ? TargetPoint.ScoreNormalized() * 30f : 0;
+            float currentPointScore = TargetPoint != null ? TargetPoint.NormalizedScore * 30f : 0;
 
             distanceReport.Feed((Time.time, (dist, 0)));
             visionReport.Feed((Time.time, (seen, 0)));
@@ -500,10 +280,10 @@ public class EnemyAI : MonoBehaviour
             TreeRootAI.Execute(distance);
         }
         */
-        if (TreeRootAI.Action(distance) != TreeRootAI.history)
+        if (TreeRootAI.DecisionFunction(distance) != TreeRootAI.LastChildIndex)
         {
             TreeRootAI.Execute(distance);
-            // Debug.LogWarning("Tree root AI updated");
+            Debug.LogWarning("Tree root AI changed state");
         }
     }
 
@@ -544,61 +324,24 @@ public class EnemyAI : MonoBehaviour
 
     HidePoint GetBetterHidePoint(out float hidePointScore)
     {
-        hidePointScore = 0;
-        ScoresDatabase hidePoints = simulationControl.ScoresDatabase;
-        if (hidePoints.Scores.Count <= 0)
+        HidePoint bestPoint = simulationControl.CurrentBestPoint;
+        hidePointScore = bestPoint.Score; // ( updating the point is not idial )
+        return simulationControl.CurrentBestPoint;
+    }
+
+    public NavMeshPath FindNormalPath(Vector3 startPosition, Vector3 TargetPoint)
+    {
+        NavMeshPath tempPath = new NavMeshPath();
+
+        if (!NavMesh.CalculatePath(startPosition, TargetPoint, Agent.areaMask, tempPath))
         {
-            Debug.LogError("No HidePoints in the database");
+            Debug.LogWarning("Não foi possível calcular um caminho válido.");
+            Debug.LogWarning("startPosition: " + startPosition);
+            Debug.LogWarning("TargetPoint: " + TargetPoint);
             return null;
         }
-
-        List<HidePoint> points = new List<HidePoint>(hidePoints.Scores.Keys);
-
-        foreach (HidePoint point in points)
-        {
-            float score = point.Score; // update database
-        }
-
-        HidePoint chosenPoint = hidePoints.Scores.OrderByDescending(h => h.Value).First().Key;
-        hidePointScore = chosenPoint.Score;
-        return chosenPoint;
-    }
-
-    float GetWallWidth(Transform wallTransform, Vector3 playerPosition)
-    {
-        Collider collider = wallTransform.GetComponent<Collider>();
-        if (collider == null)
-        {
-            Debug.LogError("Nenhum Collider encontrado na parede!");
-            return 0f;
-        }
-
-        Vector3 directionToWall = (wallTransform.position - playerPosition).normalized;
-
-        Vector3 wallSize = collider.bounds.size;
-
-        float width =
-            Mathf.Abs(Vector3.Dot(wallTransform.right, directionToWall))
-            > Mathf.Abs(Vector3.Dot(wallTransform.forward, directionToWall))
-                ? wallSize.x
-                : wallSize.z;
-
-        return width;
-    }
-
-    GameObject GetGameObjectFromNavMeshHit(NavMeshHit hit, float radius = 1f)
-    {
-        Collider[] colliders = Physics.OverlapSphere(hit.position, radius);
-
-        foreach (Collider col in colliders)
-        {
-            if (col.gameObject.CompareTag("World")) // Filtra se necessário
-            {
-                return col.gameObject;
-            }
-        }
-
-        return null; // Retorna null se nada for encontrado
+        else
+            return tempPath;
     }
 
     public NavMeshPath GetSafeNavMeshPath(Vector3 startPosition, Vector3 TargetPoint)
@@ -608,6 +351,8 @@ public class EnemyAI : MonoBehaviour
         if (!NavMesh.CalculatePath(startPosition, TargetPoint, Agent.areaMask, tempPath))
         {
             Debug.LogWarning("Não foi possível calcular um caminho válido.");
+            Debug.LogWarning("startPosition: " + startPosition);
+            Debug.LogWarning("TargetPoint: " + TargetPoint);
             return null;
         }
 
@@ -649,7 +394,7 @@ public class EnemyAI : MonoBehaviour
 
     private Vector3 FindAlternativePoint(Vector3 from, Vector3 unsafePoint, Vector3 enemyPosition)
     {
-        Collider[] obstacles = Physics.OverlapSphere(unsafePoint, 10f, HidableLayers);
+        Collider[] obstacles = Physics.OverlapSphere(unsafePoint, 10f, simulationControl.mapLayer);
 
         foreach (Collider obstacle in obstacles)
         {
@@ -672,19 +417,10 @@ public class EnemyAI : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
         while (true)
         {
-            NavMeshPath safePath = GetSafeNavMeshPath(
-                transform.position,
-                player.transform.position
-            );
-            if (safePath == null)
-            {
-                yield return wait;
-                continue;
-            }
+            NavMeshPath safePath = FindNormalPath(transform.position, player.transform.position);
 
             if (safePath.corners.Length > 0)
             {
-                Agent.ResetPath();
                 Agent.SetPath(safePath);
             }
             else
@@ -692,5 +428,21 @@ public class EnemyAI : MonoBehaviour
 
             yield return wait;
         }
+    }
+
+    private void GetAllMapPoints(float maxRadius = 100f, float step = 1f) =>
+        StartCoroutine(FindAllPointsInMap(maxRadius, step));
+
+    private IEnumerator FindAllPointsInMap(float maxRadius, float step)
+    {
+        SphereCollider collider = GetComponentInChildren<SphereCollider>();
+        float radius = 1f;
+        while (radius < maxRadius)
+        {
+            radius += step;
+            collider.radius = radius;
+            yield return null; // Espera um frame para atualizar o raio do collider
+        }
+        collider.enabled = false;
     }
 }

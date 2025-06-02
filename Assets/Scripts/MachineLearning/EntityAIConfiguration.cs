@@ -6,6 +6,7 @@ public class EntityAIConfiguration
     public float DotDirection_Importance { get; private set; }
     public float MapHeuristic_Importance { get; private set; }
     public float ZoneScore_Importance { get; private set; }
+    public float Exploration_Importance { get; private set; }
 
     public EntityAIConfiguration(
         float enemyDistance,
@@ -13,7 +14,8 @@ public class EntityAIConfiguration
         float averageSpotDistance,
         float dotDirection,
         float mapHeuristic,
-        float zoneScore
+        float zoneScore,
+        float explorationImportance
     )
     {
         EnemyDistance_Importance = enemyDistance;
@@ -22,9 +24,21 @@ public class EntityAIConfiguration
         DotDirection_Importance = dotDirection;
         MapHeuristic_Importance = mapHeuristic;
         ZoneScore_Importance = zoneScore;
+        Exploration_Importance = explorationImportance;
     }
 
-    public bool Compare(float D, float AD, float OD, float Dot, float MH, float ZS)
+    public EntityAIConfiguration()
+    {
+        EnemyDistance_Importance = 0;
+        OwnDistance_Importance = 0;
+        AverageSpotDistance_Importance = 0;
+        DotDirection_Importance = 0;
+        MapHeuristic_Importance = 0;
+        ZoneScore_Importance = 0;
+        Exploration_Importance = 0;
+    }
+
+    public bool Compare(float D, float AD, float OD, float Dot, float MH, float ZS, float EX)
     {
         if (
             this.EnemyDistance_Importance != D
@@ -33,6 +47,7 @@ public class EntityAIConfiguration
             || this.DotDirection_Importance != Dot
             || this.MapHeuristic_Importance != MH
             || this.ZoneScore_Importance != ZS
+            || this.Exploration_Importance != EX
         )
             return false;
         else
@@ -50,6 +65,7 @@ public class EntityAIConfiguration
                 || this.DotDirection_Importance != other.DotDirection_Importance
                 || this.MapHeuristic_Importance != other.MapHeuristic_Importance
                 || this.ZoneScore_Importance != other.ZoneScore_Importance
+                || this.Exploration_Importance != other.Exploration_Importance
             )
                 return false;
             else
@@ -69,7 +85,8 @@ public class EntityAIConfiguration
         float averageSpotDistance,
         float dotDirection,
         float mapHeuristic,
-        float zoneScore
+        float zoneScore,
+        float explorationImportance
     )
     {
         EnemyDistance_Importance = enemyDistance;
@@ -78,5 +95,6 @@ public class EntityAIConfiguration
         DotDirection_Importance = dotDirection;
         MapHeuristic_Importance = mapHeuristic;
         ZoneScore_Importance = zoneScore;
+        Exploration_Importance = explorationImportance;
     }
 }
