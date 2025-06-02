@@ -174,8 +174,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c9c5f44b9bdc7d41b9faf5d5273c612, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentRoomID: 0
-  startAtID: 0
+  currentRoomID: 6
+  startAtID: 6
   character: {fileID: 22065364}
 --- !u!1001 &60492208
 PrefabInstance:
@@ -778,6 +778,14 @@ PrefabInstance:
     - target: {fileID: 5676338375754883174, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: m_InitialEventNameOverriden
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7246638549144090123, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9999899
+      objectReference: {fileID: 0}
+    - target: {fileID: 7246638549144090123, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.0044864444
       objectReference: {fileID: 0}
     - target: {fileID: 7315376074184790748, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: useVolumetric
