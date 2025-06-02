@@ -1,174 +1,212 @@
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
+using DataSpace;
+using Unity.Collections;
 using UnityEngine;
 
 public class HidePoint
 {
-    private EnemyAI player;
-    public Vector3 Position { get; private set; }
-    public float Score => GetHidePointScore(database.Scores.Keys.ToList(), player, true); // auto updates shared database
-    public float Heuristic => CalculateSingleHeuristic();
-    public float ZoneScore => CalculateZoneScore();
-    public HidePointInteractionReport Report { get; private set; }
-    public EntityAIConfiguration Config { get; private set; }
-    private ScoresLearner learnerAI;
-    private ScoresDatabase database;
-    private SimulationControl simulationControl;
+    // Dependências
+    private readonly EnemyAI enemyAI;
+    private readonly SimulationControl simulationControl;
+    private EntityAIConfiguration config;
+    public float lastInteractionTime;
 
-    public float ScoreNormalized()
-    {
-        float score = Score; // update database;
-        return simulationControl.ScoresDatabase.normalized.Scores[this];
-    }
+    // Estado
+    private float lastZoneScore;
+    private float lastHeuristic;
+    private float currentScore;
+
+    // Propriedades públicas
+    public Vector3 Position { get; }
+    public HidePointInteractionReport Report { get; }
+    public float Score => UpdateCache();
+    public float NormalizedScore => GetNormalizedScore();
+    public float Heuristic => lastHeuristic;
+    public float ZoneScore => lastZoneScore;
+    private Data reportData;
+    public Data ReportData => reportData;
 
     public HidePoint(
         Vector3 position,
         EntityAIConfiguration config,
-        EnemyAI player,
-        ScoresDatabase database,
-        SimulationControl simulationControl
+        EnemyAI enemyAI,
+        SimulationControl simulation
     )
     {
-        this.simulationControl = simulationControl;
-        learnerAI = simulationControl.LearnerAI;
-        Position = PublicMethods.RoundVector3(position);
-        Report = new HidePointInteractionReport(this, learnerAI);
-        Config = config;
-        this.database = database;
-        this.player = player;
+        Position = ScoresDatabase.RoundVector3(position);
+        this.config = config;
+        this.enemyAI = enemyAI;
+        simulationControl = simulation;
+        Report = new HidePointInteractionReport(this, simulation.LearnerAI);
+
+        reportData = new Data(
+            "HidePointReport_" + PublicMethods.Vector3ToString(Position),
+            null,
+            Data.Type.SIMPLE,
+            true
+        );
+
+        UpdateCache();
     }
 
-    public float CalculateZoneScore(int pointsAsked = 5)
+    public void ChangeEntityConfig(EntityAIConfiguration config) => this.config = config;
+
+    private float UpdateCache()
     {
-        if (database.Scores.Count <= 0)
-            return 0;
+        if (!simulationControl.DatabaseLoaded)
+            return 0f;
+        lastZoneScore = CalculateZoneScore();
+        lastHeuristic = CalculateHeuristic();
+        currentScore = CalculateCompositeScore();
+        simulationControl.HeuristicDatabase.SetScore(this, currentScore);
 
-        if (pointsAsked > database.Scores.Count)
-            pointsAsked = database.Scores.Count;
+        return currentScore;
+    }
 
-        Dictionary<HidePoint, float> distances = new Dictionary<HidePoint, float>();
+    private float CalculateCompositeScore()
+    {
+        if (Position == Vector3.zero || !simulationControl.ScoresDatabase.HasPoint(this))
+            return 0f;
 
-        foreach (HidePoint point in database.Scores.Keys)
+        // Cálculo das componentes do score
+        float enemyDistanceScore = CalculateEnemyDistanceScore() * config.EnemyDistance_Importance;
+        float directionScore =
+            CalculateDirectionScore()
+            * (1 - Mathf.Abs(enemyDistanceScore))
+            * config.DotDirection_Importance;
+
+        float zoneScore = lastZoneScore * config.ZoneScore_Importance;
+        float heuristicScore = lastHeuristic * config.MapHeuristic_Importance;
+        float averageDistanceScore =
+            CalculateAverageDistanceScore() * config.AverageSpotDistance_Importance;
+        float ownDistanceScore = CalculateOwnDistanceScore() * config.OwnDistance_Importance;
+
+        float maxInteractions = simulationControl
+            .HeuristicDatabase.Scores.Keys.OrderByDescending(x => x.Report.InteractionsNumber)
+            .First()
+            .Report.InteractionsNumber;
+        float explorationScore =
+            (1f - (Report.InteractionsNumber / maxInteractions)) * config.Exploration_Importance;
+
+        // Combinação dos componentes
+        float finalScore =
+            enemyDistanceScore
+            - averageDistanceScore
+            - ownDistanceScore
+            + directionScore
+            + heuristicScore
+            + zoneScore
+            + explorationScore;
+
+        // Debug.Log("---------- Point Score Calculation ----------");
+        // Debug.Log("Point Score: " + finalScore);
+        // Debug.Log("-");
+        // Debug.Log("Enemy Distance Score: " + enemyDistanceScore);
+        // Debug.Log("Average Distance Score: " + averageDistanceScore);
+        // Debug.Log("Own Distance Score: " + ownDistanceScore);
+        // Debug.Log("Direction Score: " + directionScore);
+        // Debug.Log("Heuristic Score: " + heuristicScore);
+        // Debug.Log("Exploration Score: " + explorationScore);
+        // Debug.Log("Zone Score: " + zoneScore);
+
+        return finalScore;
+    }
+
+    private float CalculateEnemyDistanceScore()
+    {
+        float enemyDistanceFromPoint = Vector3.Distance(
+            Position,
+            enemyAI.Player.transform.position
+        );
+
+        float score = enemyDistanceFromPoint / simulationControl.MapMaxDistance;
+
+        return score;
+        // Retorna um valor entre -1 e 1, onde valores negativos indicam que o ponto está mais perto do inimigo
+    }
+
+    private float CalculateDirectionScore()
+    {
+        Vector3 toSpot = Position - enemyAI.transform.position;
+        Vector3 fromEnemy = enemyAI.transform.position - enemyAI.Player.transform.position;
+
+        if (toSpot == Vector3.zero || fromEnemy == Vector3.zero)
+            return 0f;
+
+        toSpot.Normalize();
+        fromEnemy.Normalize();
+
+        return Vector3.Dot(toSpot, fromEnemy);
+    }
+
+    private float CalculateAverageDistanceScore()
+    {
+        var validPoints = simulationControl
+            .ScoresDatabase.Scores.Keys.Where(p => p != this)
+            .Select(p => Vector3.Distance(Position, p.Position))
+            .DefaultIfEmpty();
+
+        return validPoints.Average() / simulationControl.MapMaxDistance;
+    }
+
+    private float CalculateOwnDistanceScore()
+    {
+        return Vector3.Distance(Position, enemyAI.transform.position)
+            / simulationControl.MapMaxDistance;
+    }
+
+    private float CalculateHeuristic()
+    {
+        if (!simulationControl.HeuristicDatabase.HasPoint(this))
         {
-            float dist = Vector3.Distance(player.transform.position, point.Position);
-            distances.Add(point, dist);
+            Debug.LogWarning("Heuristic not found for HidePoint at " + Position);
+            return 0f;
         }
 
-        distances.OrderBy(x => x.Value);
-        float sum = 0;
-
-        int index = 0;
-        foreach (HidePoint point in distances.Keys)
-        {
-            if (index >= pointsAsked)
-                break;
-
-            sum += distances[point];
-            index++;
-        }
-
-        float zoneScore = sum / pointsAsked;
-        return zoneScore;
-    }
-
-    public void ChangeEntityConfig(EntityAIConfiguration config)
-    {
-        Config = config;
-    }
-
-    public float CalculateSingleHeuristic()
-    {
-        float heuristic = Report.DistanceFromEnemy * learnerAI.DistanceImportance;
-        heuristic += Report.ExpositionTime * learnerAI.ExpositionImportance;
-        heuristic += Report.ReactionTime * learnerAI.ReactionImportance;
+        float heuristic = simulationControl.HeuristicDatabase.Scores[this];
         return heuristic;
+    }
+
+    private float CalculateZoneScore(int neighbors = 5)
+    {
+        var nearest = simulationControl
+            .ScoresDatabase.Scores.Keys.Where(p => p != this)
+            .OrderBy(p => Vector3.Distance(p.Position, Position))
+            .Take(neighbors)
+            .Select(p => Vector3.Distance(enemyAI.transform.position, p.Position));
+
+        return nearest.Any() ? nearest.Average() / simulationControl.MapMaxDistance : 0f;
+    }
+
+    private float GetNormalizedScore()
+    {
+        return simulationControl.ScoresDatabase.normalized.Scores.TryGetValue(
+            this,
+            out float normalized
+        )
+            ? normalized
+            : 0f;
     }
 
     public void OnInteract()
     {
-        float dist = Vector3.Distance(player.Player.transform.position, this.Position);
-        float expTime = player.BeingSeen ? player.UpdateFrequency : -player.UpdateFrequency;
+        float distance =
+            Vector3.Distance(enemyAI.Player.transform.position, enemyAI.Player.transform.position)
+            / simulationControl.MapMaxDistance;
+        float expTime = enemyAI.BeingSeen ? enemyAI.UpdateFrequency : -enemyAI.UpdateFrequency;
         float reactionTime =
-            Vector3.Distance(player.transform.position, player.Player.transform.position)
-            - player.GetLastUpdateAIDistanceFromTarget();
+            distance
+            - (enemyAI.GetLastUpdateAIDistanceFromTarget() / simulationControl.MapMaxDistance);
 
-        Report.FeedReport(dist, expTime, reactionTime);
-        // Debug.LogWarning("Hide point interacted");
+        Report.FeedReport(distance, expTime, reactionTime);
+        UpdateCache();
     }
 
-    float GetHidePointScore(
-        List<HidePoint> hidePoints,
-        EnemyAI player,
-        bool updateCollection = false
-    )
-    {
-        if (this.Position == Vector3.zero)
-            return 0;
+    public override bool Equals(object obj) =>
+        obj is HidePoint other
+        && PublicMethods.RoundVector3(Position) == PublicMethods.RoundVector3(other.Position);
 
-        if (hidePoints.Count == 0)
-            return 0;
-
-        Dictionary<HidePoint, float> distances = new Dictionary<HidePoint, float>();
-
-        foreach (HidePoint point in hidePoints)
-        {
-            if (this.Position == point.Position || distances.ContainsKey(point))
-                continue;
-
-            float distance = Vector3.Distance(this.Position, point.Position);
-            distances.Add(point, distance);
-        }
-
-        float avgDistance =
-            distances.Count > 0
-                ? distances.Sum(d => d.Value)
-                    / distances.Count
-                    / (simulationControl.MapMaxDistance / 2f) // because value will always be distant from MapMaxDistance
-                : 0;
-        float ownDistance =
-            Vector3.Distance(this.Position, player.transform.position)
-            / simulationControl.MapMaxDistance;
-        float enemyDistance =
-            Vector3.Distance(this.Position, player.Player.transform.position)
-            / simulationControl.MapMaxDistance;
-
-        Vector3 playerDir = (this.Position - player.transform.position).normalized;
-        Vector3 enemyDir = (player.transform.position - player.transform.position).normalized;
-        float dot = Vector3.Dot(playerDir, enemyDir);
-
-        float score = enemyDistance * Config.EnemyDistance_Importance;
-
-        score -= avgDistance * Config.AverageSpotDistance_Importance;
-        score -= ownDistance * Config.OwnDistance_Importance;
-        score += dot / 2 * Config.DotDirection_Importance;
-        score += learnerAI.Scores.normalized.Scores[this] * Config.MapHeuristic_Importance;
-
-        if (simulationControl.ScoresDatabase.normalized.Scores.ContainsKey(this))
-            score +=
-                simulationControl.ScoresDatabase.normalized.Scores[this]
-                * Config.MapHeuristic_Importance;
-
-        score += ZoneScore / simulationControl.MapMaxDistance * Config.ZoneScore_Importance; // zone score (average of the x(default=5) nearest points)
-
-        if (updateCollection)
-            database.SetScore(this, score);
-
-        return score;
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (obj is HidePoint other)
-        {
-            return Position == other.Position;
-        }
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return Position.GetHashCode();
-    }
+    public override int GetHashCode() => Position.GetHashCode();
 }

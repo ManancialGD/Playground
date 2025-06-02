@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class SimulationControl : MonoBehaviour
 {
@@ -18,10 +20,20 @@ public class SimulationControl : MonoBehaviour
     public ScoresDatabase ScoresDatabase { get; set; } = new ScoresDatabase();
     public ScoresDatabase HeuristicDatabase { get; set; } = new ScoresDatabase();
     public EntityAIConfiguration CurrentConfig { get; private set; } = null;
-    float[] configHistory = new float[6];
+    EntityAIConfiguration configHistory = new EntityAIConfiguration();
+
+    [SerializeField]
+    private ScoresFileSystem scoresFileSystem;
 
     [SerializeField]
     private VisualizeAlgorithms visualizeAlgorithms;
+    public HidePoint CurrentBestPoint => ScoresDatabase.CurrentBestPoint;
+
+    [SerializeField]
+    public LayerMask mapLayer;
+
+    bool databaseLoaded = false;
+    public bool DatabaseLoaded => databaseLoaded;
 
     private void Awake()
     {
@@ -36,9 +48,17 @@ public class SimulationControl : MonoBehaviour
             return;
         }
 
-        CurrentConfig = GenerateConfig(TrainingEntity);
-        HeuristicDatabase = LearnerAI.LoadData();
-        ScoresDatabase = new ScoresDatabase();
+        StartDatabase();
+    }
+
+    void StartDatabase()
+    {
+        CurrentConfig = GetConfig();
+        HeuristicDatabase = scoresFileSystem.LoadData();
+        ScoresDatabase = HeuristicDatabase.Clear();
+        databaseLoaded = true;
+
+        Debug.Log("Database loaded successfully");
     }
 
     void Update()
@@ -46,18 +66,10 @@ public class SimulationControl : MonoBehaviour
         if (TrainingEntity == null)
             return;
 
-        bool same = CurrentConfig.Compare(
-            TrainingEntity.AI_D_Importance,
-            TrainingEntity.AI_OD_Importance,
-            TrainingEntity.AI_AD_Importance,
-            TrainingEntity.AI_Dot_Importance,
-            TrainingEntity.AI_MH_Importance,
-            TrainingEntity.AI_ZS_Importance
-        ); // more economic
-
+        bool same = CompareConfigs(configHistory, GetConfig());
         if (!same)
         {
-            CurrentConfig = GenerateConfig(TrainingEntity);
+            CurrentConfig = GetConfig();
 
             foreach (HidePoint point in ScoresDatabase.Scores.Keys)
                 point.ChangeEntityConfig(CurrentConfig);
@@ -65,30 +77,23 @@ public class SimulationControl : MonoBehaviour
             foreach (HidePoint point in HeuristicDatabase.Scores.Keys)
                 point.ChangeEntityConfig(CurrentConfig);
 
-            // Debug.LogWarning("Configuration changed");
+            Debug.LogWarning("Configuration changed");
         }
     }
 
-    private EntityAIConfiguration GenerateConfig(EnemyAI entity)
+    private EntityAIConfiguration GetConfig()
     {
-        if (entity == null)
-            return null;
-
         EntityAIConfiguration config = new EntityAIConfiguration(
             TrainingEntity.AI_D_Importance,
             TrainingEntity.AI_OD_Importance,
             TrainingEntity.AI_AD_Importance,
             TrainingEntity.AI_Dot_Importance,
             TrainingEntity.AI_MH_Importance,
-            TrainingEntity.AI_ZS_Importance
+            TrainingEntity.AI_ZS_Importance,
+            TrainingEntity.AI_EX_Importance
         );
 
-        configHistory[0] = TrainingEntity.AI_D_Importance;
-        configHistory[1] = TrainingEntity.AI_OD_Importance;
-        configHistory[2] = TrainingEntity.AI_AD_Importance;
-        configHistory[3] = TrainingEntity.AI_Dot_Importance;
-        configHistory[4] = TrainingEntity.AI_MH_Importance;
-        configHistory[5] = TrainingEntity.AI_ZS_Importance;
+        configHistory = config;
 
         return config;
     }
@@ -106,5 +111,65 @@ public class SimulationControl : MonoBehaviour
             return false;
 
         return true;
+    }
+
+    private int ColliderArraySortComparer(Collider A, Collider B)
+    {
+        NavMeshAgent Agent = TrainingEntity.Agent;
+        if (A == null && B != null)
+        {
+            return 1;
+        }
+        else if (A != null && B == null)
+        {
+            return -1;
+        }
+        else if (A == null && B == null)
+        {
+            return 0;
+        }
+        else
+        {
+            return Vector3
+                .Distance(Agent.transform.position, A.transform.position)
+                .CompareTo(Vector3.Distance(Agent.transform.position, B.transform.position));
+        }
+    }
+
+    GameObject GetGameObjectFromNavMeshHit(NavMeshHit hit, float radius = 1f)
+    {
+        Collider[] colliders = Physics.OverlapSphere(hit.position, radius);
+
+        foreach (Collider col in colliders)
+        {
+            if (col.gameObject.CompareTag("World")) // Filtra se necessário
+            {
+                return col.gameObject;
+            }
+        }
+
+        return null; // Retorna null se nada for encontrado
+    }
+
+    float GetWallWidth(Transform wallTransform, Vector3 playerPosition)
+    {
+        Collider collider = wallTransform.GetComponent<Collider>();
+        if (collider == null)
+        {
+            Debug.LogError("Nenhum Collider encontrado na parede!");
+            return 0f;
+        }
+
+        Vector3 directionToWall = (wallTransform.position - playerPosition).normalized;
+
+        Vector3 wallSize = collider.bounds.size;
+
+        float width =
+            Mathf.Abs(Vector3.Dot(wallTransform.right, directionToWall))
+            > Mathf.Abs(Vector3.Dot(wallTransform.forward, directionToWall))
+                ? wallSize.x
+                : wallSize.z;
+
+        return width;
     }
 }

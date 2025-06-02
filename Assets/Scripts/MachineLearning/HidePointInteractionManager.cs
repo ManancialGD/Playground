@@ -7,6 +7,9 @@ public class HidePointInteractionReport
     public float DistanceFromEnemy { get; private set; } // maintained distance from enemy
     public float ReactionTime { get; private set; } // speed/ease of moving away from the enemy
     public float ExpositionTime { get; private set; } // average time beeing exposed
+    public int InteractionsNumber { get; private set; } // number of interactions with this point
+
+    public void SetInteractionsNumber(int interactions) => InteractionsNumber = interactions;
 
     public HidePointInteractionReport(
         HidePoint point,
@@ -21,6 +24,7 @@ public class HidePointInteractionReport
         this.DistanceFromEnemy = Mathf.Max(distanceFromEnemy, 0f);
         this.ReactionTime = Mathf.Max(reactionTime, 0f);
         this.learner = learner;
+        this.InteractionsNumber = 1;
     }
 
     public HidePointInteractionReport(HidePoint point, ScoresLearner learner)
@@ -30,32 +34,32 @@ public class HidePointInteractionReport
         this.DistanceFromEnemy = 0f;
         this.ReactionTime = 0f;
         this.learner = learner;
+        this.InteractionsNumber = 1;
     }
 
     public void FeedReport(float distance, float expositionTime, float reactionTime)
     {
-        this.DistanceFromEnemy = Mathf.Max(
-            Mathf.Lerp(
-                this.DistanceFromEnemy,
-                distance,
-                learner.simulationControl.TrainingEntity.UpdateFrequency * learner.LearningRate
-            ),
-            0
-        );
-        this.ExpositionTime = Mathf.Max(
-            this.ExpositionTime + (expositionTime * learner.LearningRate),
-            0
-        );
-        this.ReactionTime = Mathf.Max(
-            Mathf.Lerp(
-                this.ReactionTime,
-                reactionTime,
-                learner.simulationControl.TrainingEntity.UpdateFrequency * learner.LearningRate
-            ),
-            0
+        InteractionsNumber++;
+        HidePointInstantReport report = new HidePointInstantReport(
+            Point,
+            (DistanceFromEnemy, distance),
+            (ExpositionTime, expositionTime),
+            (ReactionTime, reactionTime),
+            InteractionsNumber
         );
 
-        float heuristic = Point.CalculateSingleHeuristic();
-        learner.Scores.SetScore(Point, heuristic);
+        learner.LearnFromReport(report);
+
+        UpdateReport(distance, expositionTime, reactionTime);
+    }
+
+    void UpdateReport(float distance, float expositionTime, float reactionTime)
+    {
+        float learningRate = learner.LearningRate;
+        DistanceFromEnemy = Mathf.Lerp(DistanceFromEnemy, distance, learningRate);
+        ExpositionTime = Mathf.Lerp(ExpositionTime, expositionTime, learningRate);
+        ReactionTime = Mathf.Lerp(ReactionTime, reactionTime, learningRate);
+
+        // atualiza o Report com o mesmo peso que atualiza a heuristica (ignorando noise)
     }
 }

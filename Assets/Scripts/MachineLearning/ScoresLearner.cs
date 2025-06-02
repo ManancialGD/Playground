@@ -1,269 +1,123 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 
+// O Learner propriamente dito
 public class ScoresLearner : MonoBehaviour
 {
     [SerializeField]
-    public SimulationControl simulationControl;
-    public ScoresDatabase Scores { get; private set; }
+    private TrainingAIConfiguration trainingConfig;
+    public TrainingAIConfiguration TrainingConfig => trainingConfig;
+
+    private float learningRate;
+    private HidePoint lastSelectedPoint;
+
+    private ScoresDatabase heuristicDatabase;
+    public ScoresDatabase HeuristicDatabase => heuristicDatabase;
+    public float LearningRate => learningRate;
+    public HidePoint LastSelectedPoint => lastSelectedPoint;
 
     [SerializeField]
-    private string pathName;
+    SimulationControl simulationControl;
 
-    [SerializeField]
-    [Range(0.01f, 1f)]
-    float learningRate = 0.1f;
-    public float LearningRate
+    private void Awake()
     {
-        get => learningRate;
-        private set => learningRate = value;
-    }
-    private string defaultFilePath = Application.dataPath + "/StreamingAssets/DataFiles/";
-
-    [SerializeField]
-    EnemyAI Player;
-
-    [SerializeField]
-    Transform Enemy;
-
-    [Header("Learning Parameters")]
-    [SerializeField]
-    [Range(0.01f, 1f)]
-    float distanceImportance = 1;
-    public float DistanceImportance => distanceImportance;
-
-    [SerializeField]
-    [Range(0.01f, 1f)]
-    float expositionImportance = 1;
-    public float ExpositionImportance => expositionImportance;
-
-    [SerializeField]
-    [Range(0.01f, 1f)]
-    float reactionImportance = 1;
-    public float ReactionImportance => reactionImportance;
-
-    private HidePoint lastUpdatedSpot;
-
-    private void Start()
-    {
-        Scores = simulationControl.HeuristicDatabase;
-        StartCoroutine(UpdateData());
+        learningRate = trainingConfig.BaseLearningRate;
+        RequestDatabase();
     }
 
-    private void OnApplicationQuit()
+    void RequestDatabase() => StartCoroutine(WaitForDatabase());
+
+    IEnumerator WaitForDatabase()
     {
-        SaveDataInDevice();
+        yield return new WaitForSeconds(0.2f);
+        heuristicDatabase = simulationControl.HeuristicDatabase;
     }
 
-    private void SaveDataInDevice()
+    public void LearnFromReport(HidePointInstantReport report)
     {
-        if (!FileSystem.FolderExists(defaultFilePath))
-            FileSystem.CreateFolder(defaultFilePath);
+        lastSelectedPoint = report.Point;
 
-        string filePath = defaultFilePath + pathName + ".txt";
+        // 1) Atualizar learning rate com decaimento
+        UpdateLearningRate(report.InteractionsNumber);
 
-        if (!FileSystem.FileExists(filePath))
+        // 2) Calcular fiabilidade (reliability) de cada feature
+        float relDist = ComputeReliability(report.DistanceFromEnemy);
+        float relExpo = ComputeReliability(report.ExpositionTime);
+        float relReact = ComputeReliability(report.ReactionTime);
+
+        float noise = CalculateNoise(report);
+
+        float reliability = 1f - noise; // quanto menor o ruído, maior a fiabilidade
+
+        // 3) Ajustar pesos originais pela fiabilidade
+        float wDistRaw = trainingConfig.DistanceImportance * relDist;
+        float wExpoRaw = trainingConfig.ExpositionImportance * relExpo;
+        float wReactRaw = trainingConfig.ReactionImportance * relReact;
+        float sumRaw = wDistRaw + wExpoRaw + wReactRaw;
+        if (sumRaw <= 0f)
+            sumRaw = 1f; // evitar divisão por zero
+
+        float wDist = wDistRaw / sumRaw;
+        float wExpo = wExpoRaw / sumRaw;
+        float wReact = wReactRaw / sumRaw;
+
+        // 4) Computar reward já normalizado [0,1]
+        float rd = report.DistanceFromEnemy.current; // quanto mais longe, melhor
+        float re = 1f - report.ExpositionTime.current; // quanto menos exposto, melhor
+        float rt = 1f - report.ReactionTime.current; // quanto mais rápido, melhor
+
+        float reward = wDist * rd + wExpo * re + wReact * rt;
+
+        // 5) Q-learning update
+        float oldQ = heuristicDatabase.Scores[report.Point];
+        float newQ = oldQ + learningRate * reliability * (reward - oldQ);
+
+        report.Point.ReportData.Feed((Time.time, (newQ, 0f)));
+
+        heuristicDatabase.SetScore(report.Point, newQ);
+    }
+
+    private void UpdateLearningRate(int interactions)
+    {
+        float baseLearningRate = trainingConfig.BaseLearningRate;
+        float learningRateDecay = trainingConfig.LearningRateDecay;
+        learningRate = baseLearningRate / (1f + learningRateDecay * interactions);
+    }
+
+    private float ComputeReliability((float previous, float current) pair)
+    {
+        float delta = Mathf.Abs(pair.current - pair.previous);
+        float reliability = 1f - Mathf.Clamp01(delta);
+
+        return reliability;
+    }
+
+    private float CalculateNoise(HidePointInstantReport report)
+    {
+        float[] vals =
         {
-            FileSystem.CreateFile(filePath, WriteData(Scores));
-        }
-        else
+            report.DistanceFromEnemy.current,
+            1f - report.ExpositionTime.current, // we need lower exposition time
+            report.ReactionTime.current, // we need higher delta distance from enemy
+        };
+
+        float[] h_vals =
         {
-            FileSystem.RemoveFile(filePath);
-            FileSystem.CreateFile(filePath, WriteData(Scores));
-        }
-    }
+            report.DistanceFromEnemy.previous,
+            1f - report.ExpositionTime.previous, // we need lower exposition time
+            report.ReactionTime.previous, // we need higher delta distance from enemy
+        };
 
-    private string WriteData(ScoresDatabase data)
-    {
-        HashSet<HidePoint> uniquePositions = new HashSet<HidePoint>();
-        string newData = "";
+        float oldMean = (h_vals[0] + h_vals[1] + h_vals[2]) / 3f;
+        float mean = (vals[0] + vals[1] + vals[2]) / 3f;
 
-        foreach (KeyValuePair<HidePoint, float> point in data.ToDictionary)
-        {
-            if (!uniquePositions.Contains(point.Key))
-            {
-                newData += $"{point.Key.Position}|{point.Value}\n";
-                uniquePositions.Add(point.Key);
-            }
-            else
-            {
-                Debug.LogWarning($"Posição duplicada detectada ao salvar: {point.Key}");
-            }
-        }
+        float oldVariance = h_vals.Select(v => (v - oldMean) * (v - oldMean)).Sum() / 3f;
+        float variance = vals.Select(v => (v - mean) * (v - mean)).Sum() / 3f;
 
-        return newData;
-    }
+        float historicalVariance = Mathf.Abs(variance - oldVariance);
+        float noise = Mathf.Sqrt(historicalVariance);
 
-    private Dictionary<HidePoint, float> ReadData(string data)
-    {
-        string[] dataLines = data.Split('\n');
-        Debug.Log("File has " + dataLines.Length + " linhas.");
-
-        Dictionary<HidePoint, float> newData = new Dictionary<HidePoint, float>();
-
-        foreach (string line in dataLines)
-        {
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
-
-            string[] lineData = line.Split('|');
-            Vector3 position = StringToVector3(lineData[0]);
-            HidePoint point = new HidePoint(
-                position,
-                simulationControl.CurrentConfig,
-                Player,
-                simulationControl.ScoresDatabase,
-                simulationControl
-            );
-            float score = float.Parse(lineData[1], CultureInfo.InvariantCulture);
-
-            if (!newData.ContainsKey(point))
-            {
-                newData.Add(point, score);
-            }
-            else
-            {
-                Debug.LogWarning($"Posição duplicada ignorada ao carregar: {position}");
-            }
-        }
-
-        return newData;
-    }
-
-    private static Vector3 StringToVector3(string value)
-    {
-        value = value.Trim('(', ')'); // Remove parênteses
-        string[] split = value.Split(',');
-
-        if (split.Length != 3)
-            throw new System.FormatException("Formato inválido para Vector3");
-
-        return RoundVector3(
-            new Vector3(
-                float.Parse(split[0], CultureInfo.InvariantCulture),
-                float.Parse(split[1], CultureInfo.InvariantCulture),
-                float.Parse(split[2], CultureInfo.InvariantCulture)
-            )
-        );
-    }
-
-    public ScoresDatabase LoadData()
-    {
-        if (
-            FileSystem.FolderExists(defaultFilePath)
-            && FileSystem.FileExists(defaultFilePath + pathName + ".txt")
-        )
-            return new ScoresDatabase(
-                ReadData(File.ReadAllText(defaultFilePath + pathName + ".txt"))
-            );
-
-        return new ScoresDatabase();
-    }
-
-    public void SetScore(HidePoint hidingSpot, float score)
-    {
-        if (hidingSpot == null)
-        {
-            Debug.LogError("Invalid input hide point");
-            return;
-        }
-        if (Scores.HasPoint(hidingSpot))
-        {
-            Scores.Scores[hidingSpot] = Mathf.Lerp(
-                Scores.Scores[hidingSpot],
-                score,
-                Mathf.Clamp01(learningRate)
-            );
-        }
-        else
-        {
-            Scores.Scores.Add(hidingSpot, score);
-        }
-    }
-
-    void OnDrawGizmos()
-    {
-        if (Scores == null || Scores.Scores.Count <= 0)
-            return;
-
-        foreach (KeyValuePair<HidePoint, float> spot in Scores.normalized.ToDictionary)
-        {
-            float value = spot.Value;
-            Gizmos.color = new Color(1f - value, value, 0f);
-            if (lastUpdatedSpot != spot.Key)
-                Gizmos.DrawLine(spot.Key.Position, spot.Key.Position + Vector3.up * 50f);
-            else
-                Gizmos.DrawLine(spot.Key.Position, spot.Key.Position + Vector3.up * 80f);
-        }
-    }
-
-    public IEnumerator UpdateData()
-    {
-        WaitForSeconds wait = new WaitForSeconds(Player.UpdateFrequency);
-        // Debug.LogWarning("Update frequency set to: " + Player.UpdateFrequency);
-
-        float tmp = Player.UpdateFrequency;
-        while (true)
-        {
-            yield return wait;
-            if (tmp != Player.UpdateFrequency)
-            {
-                // Debug.LogWarning("Update frequency changed to: " + Player.UpdateFrequency);
-                wait = new WaitForSeconds(Player.UpdateFrequency);
-                tmp = Player.UpdateFrequency;
-            }
-
-            HidePoint closestSpot = GetClosestPoint(Player.transform.position);
-            lastUpdatedSpot = closestSpot;
-
-            if (closestSpot == null)
-            {
-                Debug.LogError("Close point not found");
-                continue;
-            }
-
-            closestSpot.OnInteract();
-        }
-    }
-
-    public HidePoint GetClosestPoint(Vector3 target)
-    {
-        if (
-            simulationControl.ScoresDatabase == null
-            || simulationControl.ScoresDatabase.Scores.Count == 0
-        )
-        {
-            Debug.LogError("No scores found");
-            return null;
-        }
-
-        HidePoint closest = simulationControl.ScoresDatabase.Scores.First().Key;
-        float minDistance = float.MaxValue;
-
-        foreach (HidePoint point in simulationControl.ScoresDatabase.Scores.Keys)
-        {
-            float distSq = Vector3.Distance(target, point.Position);
-            if (distSq < minDistance)
-            {
-                minDistance = distSq;
-                closest = point;
-            }
-        }
-
-        return closest;
-    }
-
-    public static Vector3 RoundVector3(Vector3 v, int decimalPlaces = 4)
-    {
-        float multiplier = Mathf.Pow(10, decimalPlaces);
-        return new Vector3(
-            Mathf.Round(v.x * multiplier) / multiplier,
-            Mathf.Round(v.y * multiplier) / multiplier,
-            Mathf.Round(v.z * multiplier) / multiplier
-        );
+        return noise;
     }
 }
