@@ -24,6 +24,8 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private ObjectPool bulletPool;
     [SerializeField] private VisualEffect muzzleFlash;
 
+    [SerializeField] private BulletProjectile bulletPrefab;
+
     private bool canShoot = true;
     public event Action ShootEvent;
     private Coroutine shootCoroutine;
@@ -45,9 +47,9 @@ public class CharacterShooter : MonoBehaviour
 
             if (Vector3.Distance(transform.position, hit.point) > 1 ||
                 Vector3.Dot(orientation.forward, (transform.position - hit.point).normalized) < -.5f)
-                    aimTarget.position = hit.point;
+                aimTarget.position = hit.point;
             else
-                aimTarget.position =cam.forward * maxDistance;
+                aimTarget.position = cam.forward * maxDistance;
         }
         else
             aimTarget.position = cam.forward * maxDistance;
@@ -68,7 +70,7 @@ public class CharacterShooter : MonoBehaviour
     private void OnShootActionPerformed(InputAction.CallbackContext context)
     {
         if (characterController?.CharacterState == CharacterStates.Console) return;
-        
+
         shootCoroutine = StartCoroutine(ShootCoroutine());
     }
 
@@ -99,14 +101,20 @@ public class CharacterShooter : MonoBehaviour
 
     private void Shoot()
     {
-        GameObject bullet = bulletPool.GetObject();
+        // GameObject bullet = bulletPool.GetObject();
+        GameObject bullet = Instantiate(bulletPrefab.gameObject, gunTip.position, gunTip.rotation);
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        bullet.transform.parent = null;
+        
         if (rb)
         {
-            bullet.transform.position = gunTip.position;
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.AddForce((aimTarget.position - gunTip.position).normalized * bulletSpeed, ForceMode.Impulse);
+
+            Vector3 direction = (aimTarget.position - gunTip.position).normalized;
+
+            rb.linearVelocity = direction * bulletSpeed;
+
             ShootEvent?.Invoke();
             if (muzzleFlash) muzzleFlash.Play();
         }

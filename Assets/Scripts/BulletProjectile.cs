@@ -29,7 +29,11 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
 
     private void OnTriggerEnter(Collider other)
     {
-        HandleCollision();
+        if (other.TryGetComponent(out RagDollLimb ragDollLimb))
+        {
+            ragDollLimb.Damage(transform.position, rb.linearVelocity.normalized);
+        }
+        HandleDespawn();
     }
 
     public void SetPool(ObjectPool pool)
@@ -39,7 +43,12 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
 
     public void ReturnToPoll()
     {
-        if (thisObjectPool == null) Destroy(gameObject);
+        if (thisObjectPool == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
         StopObject();
         gameObject.SetActive(false);
         thisObjectPool.ReturnObject(gameObject);
@@ -53,7 +62,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
         rb.angularVelocity = Vector3.zero;
         trail.emitting = false;
     }
-    private void HandleCollision()
+    private void HandleDespawn()
     {
         rb.linearVelocity = Vector3.zero;
         rb.Sleep();
@@ -63,6 +72,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
     public void StartObject()
     {
         rb.WakeUp();
+        rb.linearVelocity = Vector3.zero;
 
         StartCoroutine(EnableTrail());
     }
