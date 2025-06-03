@@ -419,6 +419,13 @@ public class EnemyAI : MonoBehaviour
         {
             NavMeshPath safePath = FindNormalPath(transform.position, player.transform.position);
 
+            if (safePath == null)
+            {
+                Debug.LogError("Stealth path not found");
+                yield return wait;
+                continue;
+            }
+
             if (safePath.corners.Length > 0)
             {
                 Agent.SetPath(safePath);
