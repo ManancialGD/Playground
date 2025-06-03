@@ -193,7 +193,7 @@ public class HidePoint
     public void OnInteract()
     {
         float distance =
-            Vector3.Distance(enemyAI.Player.transform.position, enemyAI.Player.transform.position)
+            Vector3.Distance(enemyAI.transform.position, enemyAI.Player.transform.position)
             / simulationControl.MapMaxDistance;
         float expTime = enemyAI.BeingSeen ? enemyAI.UpdateFrequency : -enemyAI.UpdateFrequency;
         float reactionTime =

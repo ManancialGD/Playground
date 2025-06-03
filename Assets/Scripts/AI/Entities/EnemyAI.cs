@@ -211,25 +211,33 @@ public class EnemyAI : MonoBehaviour
         ExecutionNode defenseNode = new ExecutionNode(input =>
         {
             Defense(input);
+            AI_LastUpdate = Time.time;
             return NodeStatus.Success;
         });
 
-        ExecutionNode attackNode = new ExecutionNode(input =>
+        ControlNode chooseAttack = new ControlNode(beingSeen =>
         {
-            return Attack(input);
+            // input should be ( float 0 or 1 where 0 is stealth and 1 is brute )
+            // enemy always attack stealth until it is caught
+
+            if (beingSeen < 1)
+                return 0; // attack stealth
+            else
+                return 1; // attack brute
         });
 
-        root.AddChild(defenseNode).AddChild(attackNode);
-        NodeStatus Attack(float value)
+        ExecutionNode stealthAttackNode = new ExecutionNode(input =>
         {
-            if (MovementCoroutine != null)
-                StopCoroutine(MovementCoroutine);
-            Agent.ResetPath();
-            //Agent.SetDestination(Player.transform.position);
-            MovementCoroutine = StartCoroutine(AttackStealthMove(Player.transform));
+            return StealthAttack(Player.transform);
+        });
 
-            return NodeStatus.Success;
-        }
+        ExecutionNode bruteAttackNode = new ExecutionNode(input =>
+        {
+            return BruteAttack(Player.transform);
+        });
+
+        root.AddChild(defenseNode).AddChild(chooseAttack);
+        chooseAttack.AddChild(stealthAttackNode).AddChild(bruteAttackNode);
 
         NodeStatus Defense(float value)
         {
@@ -240,7 +248,6 @@ public class EnemyAI : MonoBehaviour
             return NodeStatus.Success;
         }
 
-        AI_LastUpdate = Time.time;
         return root;
     }
 
@@ -412,7 +419,25 @@ public class EnemyAI : MonoBehaviour
         return Vector3.zero; // Nenhuma alternativa segura encontrada
     }
 
-    private IEnumerator AttackStealthMove(Transform player)
+    private NodeStatus StealthAttack(Transform player)
+    {
+        Coroutine stealthCoroutine = StartCoroutine(StealthAttackBehaviour(player));
+        if (stealthCoroutine == null)
+            return NodeStatus.Failure;
+
+        return NodeStatus.Success;
+    }
+
+    private NodeStatus BruteAttack(Transform player)
+    {
+        Coroutine stealthCoroutine = StartCoroutine(StealthAttackBehaviour(player));
+        if (stealthCoroutine == null)
+            return NodeStatus.Failure;
+
+        return NodeStatus.Success;
+    }
+
+    private IEnumerator StealthAttackBehaviour(Transform player)
     {
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
         while (true)
@@ -431,9 +456,36 @@ public class EnemyAI : MonoBehaviour
                 Agent.SetPath(safePath);
             }
             else
+            {
                 Debug.LogError("Stealth path not found");
+                yield return wait;
+            }
+        }
+    }
 
-            yield return wait;
+    private IEnumerator BruteAttackBehaviour(Transform player)
+    {
+        WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
+        while (true)
+        {
+            NavMeshPath safePath = FindNormalPath(transform.position, player.transform.position);
+
+            if (safePath == null)
+            {
+                Debug.LogError("Stealth path not found");
+                yield return wait;
+                continue;
+            }
+
+            if (safePath.corners.Length > 0)
+            {
+                Agent.SetPath(safePath);
+            }
+            else
+            {
+                Debug.LogError("Stealth path not found");
+                yield return wait;
+            }
         }
     }
 
