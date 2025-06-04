@@ -21,9 +21,9 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private Transform orientation;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask enemiesLayer;
+    [SerializeField] private LayerMask environmentLayer;
     [SerializeField] private ObjectPool bulletPool;
     [SerializeField] private VisualEffect muzzleFlash;
-    [SerializeField] private Transform bulletSpawnPos;
 
     [SerializeField] private BulletProjectile bulletPrefab;
 
@@ -42,7 +42,9 @@ public class CharacterShooter : MonoBehaviour
 
     public void UpdateAim()
     {
-        if (Physics.Raycast(cam.position + cam.forward * cameraSafeDistance, cam.forward, out RaycastHit hit, maxDistance))
+        LayerMask layer = enemiesLayer | environmentLayer;
+        
+        if (Physics.Raycast(cam.position + cam.forward * cameraSafeDistance, cam.forward, out RaycastHit hit, maxDistance, layer))
         {
             if (hit.collider.gameObject.layer == playerLayer || hit.collider.GetComponent<BulletProjectile>() != null) return;
 
@@ -54,8 +56,6 @@ public class CharacterShooter : MonoBehaviour
         }
         else
             aimTarget.position = cam.forward * maxDistance;
-
-        bulletSpawnPos.position = gunTip.position;
     }
 
     private void OnEnable()
@@ -105,7 +105,8 @@ public class CharacterShooter : MonoBehaviour
     private void Shoot()
     {
         // GameObject bullet = bulletPool.GetObject();
-        GameObject bullet = Instantiate(bulletPrefab.gameObject, bulletSpawnPos.position, Quaternion.identity);
+        GameObject bullet = Instantiate(bulletPrefab.gameObject, gunTip.position, Quaternion.identity);
+
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         bullet.transform.parent = null;
 
@@ -114,7 +115,7 @@ public class CharacterShooter : MonoBehaviour
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            Vector3 direction = (aimTarget.position - bulletSpawnPos.position).normalized;
+            Vector3 direction = (aimTarget.position - gunTip.position).normalized;
 
             rb.linearVelocity = direction * bulletSpeed;
 
