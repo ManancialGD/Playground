@@ -21,14 +21,13 @@ public class EnemyAI : MonoBehaviour
 
     [SerializeField]
     EnemyState ForceState = EnemyState.None;
-    public EnemyAI Player;
+    public Transform Player;
 
     public EnemyLineOfSightChecker LineOfSightChecker;
 
     [HideInInspector]
     public NavMeshAgent Agent;
     NavMeshPath Path;
-    public Rigidbody RB;
 
     public bool BeingSeen { get; private set; } = false;
 
@@ -106,7 +105,25 @@ public class EnemyAI : MonoBehaviour
     private void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
-        RB = GetComponent<Rigidbody>();
+        
+        if (Player == null)
+        {
+            Debug.LogError("EnemyAI.Player is not assigned in the inspector!");
+            enabled = false;
+            return;
+        }
+        if (LineOfSightChecker == null)
+        {
+            Debug.LogError("EnemyAI.LineOfSightChecker is not assigned in the inspector!");
+            enabled = false;
+            return;
+        }
+        if (simulationControl == null)
+        {
+            Debug.LogError("EnemyAI.simulationControl is not assigned in the inspector!");
+            enabled = false;
+            return;
+        }
 
         LineOfSightChecker.OnGainSight += HandleGainSight;
         LineOfSightChecker.OnLoseSight += HandleLoseSight;
@@ -116,7 +133,7 @@ public class EnemyAI : MonoBehaviour
         baseUpdateFrequency = UpdateFrequency;
 
         HidingScores = simulationControl.ScoresDatabase;
-        historyDistanceFromEnemy = Vector3.Distance(transform.position, Player.transform.position);
+        historyDistanceFromEnemy = Vector3.Distance(transform.position, Player.position);
         GetAllMapPoints(100f, 1f);
     }
 
@@ -228,12 +245,12 @@ public class EnemyAI : MonoBehaviour
 
         ExecutionNode stealthAttackNode = new ExecutionNode(input =>
         {
-            return StealthAttack(Player.transform);
+            return StealthAttack(Player);
         });
 
         ExecutionNode bruteAttackNode = new ExecutionNode(input =>
         {
-            return BruteAttack(Player.transform);
+            return BruteAttack(Player);
         });
 
         root.AddChild(defenseNode).AddChild(chooseAttack);
@@ -243,7 +260,7 @@ public class EnemyAI : MonoBehaviour
         {
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
-            MovementCoroutine = StartCoroutine(Hide(Player.transform));
+            MovementCoroutine = StartCoroutine(Hide(Player));
 
             return NodeStatus.Success;
         }
@@ -257,7 +274,7 @@ public class EnemyAI : MonoBehaviour
         while (true)
         {
             float seen = BeingSeen ? 30 : 0;
-            float dist = Vector3.Distance(transform.position, Player.transform.position);
+            float dist = Vector3.Distance(transform.position, Player.position);
             float dot =
                 (
                     1
@@ -278,7 +295,7 @@ public class EnemyAI : MonoBehaviour
 
     void UpdateAI()
     {
-        float distance = Vector3.Distance(transform.position, Player.transform.position);
+        float distance = Vector3.Distance(transform.position, Player.position);
         historyDistanceFromEnemy = distance;
         /*
         if (Time.time - AI_LastUpdate >= AI_UpdateInterval)
@@ -296,7 +313,7 @@ public class EnemyAI : MonoBehaviour
 
     void ForceUpdateAI()
     {
-        float distance = Vector3.Distance(transform.position, Player.transform.position);
+        float distance = Vector3.Distance(transform.position, Player.position);
         TreeRootAI.Execute(distance);
     }
 
@@ -368,7 +385,7 @@ public class EnemyAI : MonoBehaviour
 
         foreach (Vector3 point in tempPath.corners)
         {
-            if (CanSee(point, Player.transform.position))
+            if (CanSee(point, Player.position))
             {
                 Vector3 alternativePoint = FindAlternativePoint(previousPoint, point, TargetPoint);
                 if (alternativePoint != Vector3.zero)
@@ -442,7 +459,7 @@ public class EnemyAI : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
         while (true)
         {
-            NavMeshPath safePath = FindNormalPath(transform.position, player.transform.position);
+            NavMeshPath safePath = FindNormalPath(transform.position, player.position);
 
             if (safePath == null)
             {
@@ -468,7 +485,7 @@ public class EnemyAI : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
         while (true)
         {
-            NavMeshPath safePath = FindNormalPath(transform.position, player.transform.position);
+            NavMeshPath safePath = FindNormalPath(transform.position, player.position);
 
             if (safePath == null)
             {

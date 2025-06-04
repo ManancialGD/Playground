@@ -23,6 +23,7 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private LayerMask enemiesLayer;
     [SerializeField] private ObjectPool bulletPool;
     [SerializeField] private VisualEffect muzzleFlash;
+    [SerializeField] private Transform bulletSpawnPos;
 
     [SerializeField] private BulletProjectile bulletPrefab;
 
@@ -43,7 +44,7 @@ public class CharacterShooter : MonoBehaviour
     {
         if (Physics.Raycast(cam.position + cam.forward * cameraSafeDistance, cam.forward, out RaycastHit hit, maxDistance))
         {
-            if (hit.collider.gameObject.layer == playerLayer) return;
+            if (hit.collider.gameObject.layer == playerLayer || hit.collider.GetComponent<BulletProjectile>() != null) return;
 
             if (Vector3.Distance(transform.position, hit.point) > 1 ||
                 Vector3.Dot(orientation.forward, (transform.position - hit.point).normalized) < -.5f)
@@ -53,6 +54,8 @@ public class CharacterShooter : MonoBehaviour
         }
         else
             aimTarget.position = cam.forward * maxDistance;
+
+        bulletSpawnPos.position = gunTip.position;
     }
 
     private void OnEnable()
@@ -102,16 +105,16 @@ public class CharacterShooter : MonoBehaviour
     private void Shoot()
     {
         // GameObject bullet = bulletPool.GetObject();
-        GameObject bullet = Instantiate(bulletPrefab.gameObject, gunTip.position, gunTip.rotation);
+        GameObject bullet = Instantiate(bulletPrefab.gameObject, bulletSpawnPos.position, Quaternion.identity);
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         bullet.transform.parent = null;
-        
+
         if (rb)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
-            Vector3 direction = (aimTarget.position - gunTip.position).normalized;
+            Vector3 direction = (aimTarget.position - bulletSpawnPos.position).normalized;
 
             rb.linearVelocity = direction * bulletSpeed;
 

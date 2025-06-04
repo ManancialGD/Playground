@@ -66,12 +66,12 @@ public class EnemyLineOfSightChecker : MonoBehaviour
             bool canSee = CheckLineOfSight(Target);
             if (canSee && !seen)
             {
-                OnGainSight.Invoke(Target);
+                OnGainSight?.Invoke(Target);
                 seen = true;
             }
             else if (!canSee && seen)
             {
-                OnLoseSight.Invoke(Target);
+                OnLoseSight?.Invoke(Target);
                 seen = false;
             }
 

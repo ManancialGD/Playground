@@ -13,6 +13,7 @@ public class SoundEmitter : MonoBehaviour, IPooledObject
     {
         audioSource = GetComponent<AudioSource>();
     }
+
     public void SetPool(ObjectPool pool)
     {
         thisObjectPool = pool;
@@ -21,6 +22,7 @@ public class SoundEmitter : MonoBehaviour, IPooledObject
     public void ReturnToPoll()
     {
         if (thisObjectPool == null) Destroy(gameObject);
+        
         gameObject.SetActive(false);
         audioSource.outputAudioMixerGroup = null;
         thisObjectPool.ReturnObject(gameObject);

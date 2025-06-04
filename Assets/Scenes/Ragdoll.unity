@@ -1230,6 +1230,10 @@ PrefabInstance:
       value: 90
       objectReference: {fileID: 0}
     - target: {fileID: 3533329048225809820, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: cam
+      value: 
+      objectReference: {fileID: 396308249}
+    - target: {fileID: 3533329048225809820, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: bulletPool
       value: 
       objectReference: {fileID: 1975410579}
@@ -1237,9 +1241,9 @@ PrefabInstance:
       propertyPath: bulletSpeed
       value: 50
       objectReference: {fileID: 0}
-    - target: {fileID: 3533329048225809820, guid: dc75ab864f073d743a946c69da662417, type: 3}
-      propertyPath: enemiesLayer.m_Bits
-      value: 512
+    - target: {fileID: 4173984411960237791, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_Intensity
+      value: 13.205241
       objectReference: {fileID: 0}
     - target: {fileID: 5200607177510567342, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1288,6 +1292,18 @@ PrefabInstance:
     - target: {fileID: 7246638549144090123, guid: dc75ab864f073d743a946c69da662417, type: 3}
       propertyPath: m_LocalRotation.y
       value: -0.0044863573
+      objectReference: {fileID: 0}
+    - target: {fileID: 8939375864128295862, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8939375864128295862, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8939375864128295862, guid: dc75ab864f073d743a946c69da662417, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

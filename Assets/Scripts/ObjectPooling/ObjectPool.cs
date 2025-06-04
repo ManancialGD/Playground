@@ -71,11 +71,11 @@ public class ObjectPool : MonoBehaviour
 
     public void ReturnObject(GameObject poolObject)
     {
-        IPooledObject pooledObjComponent = poolObject.GetComponent<IPooledObject>();
-        if (pooledObjComponent == null)
+        if (!poolObject.TryGetComponent<IPooledObject>(out var pooledObjComponent))
         {
             Debug.LogError("Object does not have a PooledObject component.");
         }
+        
         pooledObjComponent.StopObject();
 
         poolObject.transform.SetParent(transform);

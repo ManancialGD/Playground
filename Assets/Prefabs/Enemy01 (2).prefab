@@ -180,28 +180,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Speed: 0
-  ReportName: AI_V1_t1
+  ReportName: Playground_Def_0
   WorldLayer:
     serializedVersion: 2
     m_Bits: 8
-  ForceState: 2
+  ForceState: 0
   Player: {fileID: 0}
-  HidableLayers:
-    serializedVersion: 2
-    m_Bits: 8
   LineOfSightChecker: {fileID: 5312671956472269284}
   Agent: {fileID: 0}
-  RB: {fileID: 0}
   HideSensitivity: 0.29
   MinPlayerDistance: 28.4
-  MinObstacleHeight: 0
+  MinObstacleHeight: 50
   UpdateFrequency: 0.25
-  AI_D_Importance: 8.82
-  AI_AD_Importance: 0.01
-  AI_OD_Importance: 1
-  AI_Dot_Importance: 7
-  AI_MH_Importance: 1
-  AI_ZS_Importance: 1
+  AI_D_Importance: 0.347
+  AI_AD_Importance: 0
+  AI_OD_Importance: 0.106
+  AI_Dot_Importance: 0.318
+  AI_MH_Importance: 0.029
+  AI_ZS_Importance: 0
+  AI_EX_Importance: 0.112
   HidingLearner: {fileID: 0}
   simulationControl: {fileID: 0}
 --- !u!1 &6275946129785624905
