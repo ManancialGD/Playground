@@ -33,9 +33,7 @@ public class EnemyLineOfSightChecker : MonoBehaviour
     public bool CheckLineOfSight(Transform Target)
     {
         Vector3 direction = (Target.transform.position - transform.position).normalized;
-        //float dotProduct = Vector3.Dot(transform.forward, direction);
-        //if (dotProduct >= Mathf.Cos(FieldOfView))
-        //{
+
         if (
             Physics.Raycast(
                 transform.position,

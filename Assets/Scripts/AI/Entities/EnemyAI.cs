@@ -105,7 +105,7 @@ public class EnemyAI : MonoBehaviour
     private void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
-        
+
         if (Player == null)
         {
             Debug.LogError("EnemyAI.Player is not assigned in the inspector!");
@@ -132,7 +132,22 @@ public class EnemyAI : MonoBehaviour
 
         baseUpdateFrequency = UpdateFrequency;
 
-        HidingScores = simulationControl.ScoresDatabase;
+        // (Deep Copy)
+        var newScores = new Dictionary<HidePoint, float>();
+        foreach (var pair in simulationControl.HeuristicDatabase.ToDictionary)
+        {
+            HidePoint originalPoint = pair.Key;
+            float originalScore = pair.Value;
+
+            HidePoint clonedPoint = originalPoint.Clone();
+
+            clonedPoint.SetAgentReference(this);
+
+            newScores.Add(clonedPoint, originalScore);
+        }
+
+        HidingScores = new ScoresDatabase(newScores);
+
         historyDistanceFromEnemy = Vector3.Distance(transform.position, Player.position);
     }
 
@@ -141,15 +156,6 @@ public class EnemyAI : MonoBehaviour
         if (Time.timeScale != simulationControl.SimulationSpeed)
             Time.timeScale = simulationControl.SimulationSpeed;
         UpdateAI();
-
-        //Vector3 direction = (Player.transform.position - transform.position).normalized;
-        /*
-        transform.rotation = Quaternion.RotateTowards(
-            transform.rotation,
-            Quaternion.Euler(direction),
-            0.5f
-        );
-        */
     }
 
     private void HandleGainSight(Transform Target)
@@ -170,12 +176,12 @@ public class EnemyAI : MonoBehaviour
 
         while (true)
         {
-            if (simulationControl.ScoresDatabase.Scores.Count <= 0)
+            if (HidingScores.Scores.Count <= 0)
             {
                 yield return Wait;
                 continue;
             }
-            TargetPoint = simulationControl.CurrentBestPoint;
+            TargetPoint = HidingScores.CurrentBestPoint;
             NavMeshPath path = null;
             path = FindNormalPath(transform.position, TargetPoint.Position);
             if (path != null)
@@ -296,13 +302,7 @@ public class EnemyAI : MonoBehaviour
     {
         float distance = Vector3.Distance(transform.position, Player.position);
         historyDistanceFromEnemy = distance;
-        /*
-        if (Time.time - AI_LastUpdate >= AI_UpdateInterval)
-        {
-            AI_LastUpdate = Time.time;
-            TreeRootAI.Execute(distance);
-        }
-        */
+
         if (TreeRootAI.DecisionFunction(distance) != TreeRootAI.LastChildIndex)
         {
             TreeRootAI.Execute(distance);
@@ -332,7 +332,6 @@ public class EnemyAI : MonoBehaviour
     private void UpdateDatabases(HidePoint point, float score = 0)
     {
         HidingScores.SetScore(point, score);
-        simulationControl.HeuristicDatabase.SetScore(point, 0);
     }
 
     public static Vector3 RoundVector3(Vector3 v, int decimalPlaces = 4)
@@ -347,9 +346,9 @@ public class EnemyAI : MonoBehaviour
 
     HidePoint GetBetterHidePoint(out float hidePointScore)
     {
-        HidePoint bestPoint = simulationControl.CurrentBestPoint;
+        HidePoint bestPoint = HidingScores.CurrentBestPoint;
         hidePointScore = bestPoint.Score; // ( updating the point is not idial )
-        return simulationControl.CurrentBestPoint;
+        return HidingScores.CurrentBestPoint;
     }
 
     public NavMeshPath FindNormalPath(Vector3 startPosition, Vector3 TargetPoint)
@@ -396,7 +395,7 @@ public class EnemyAI : MonoBehaviour
                 else
                 {
                     Debug.LogWarning("Não há caminho seguro possível.");
-                    return null; // Retorna o caminho original se não houver alternativa
+                    return null;
                 }
             }
 
@@ -404,7 +403,6 @@ public class EnemyAI : MonoBehaviour
             previousPoint = point;
         }
 
-        // Criar um novo caminho baseado nos pontos filtrados
         NavMeshPath safePath = new NavMeshPath();
         if (filteredPoints.Count > 1)
         {
@@ -432,7 +430,7 @@ public class EnemyAI : MonoBehaviour
             }
         }
 
-        return Vector3.zero; // Nenhuma alternativa segura encontrada
+        return Vector3.zero;
     }
 
     private NodeStatus StealthAttack(Transform player)

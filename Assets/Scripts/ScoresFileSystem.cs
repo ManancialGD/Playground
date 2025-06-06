@@ -18,6 +18,36 @@ public class ScoresFileSystem : MonoBehaviour
     [SerializeField]
     private ScoresLearner scoresLearner;
 
+    private static readonly HashSet<string> usedFilePaths = new HashSet<string>();
+
+    private void Awake()
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            Debug.LogError("ScoresFileSystem: O nome do ficheiro não está especificado. O componente será desativado.", this);
+            enabled = false;
+            return;
+        }
+
+        string fullPath = Path.GetFullPath(FilePath);
+        if (usedFilePaths.Contains(fullPath))
+        {
+            Debug.LogError($"ScoresFileSystem: Detetado caminho de ficheiro duplicado: {fullPath}. Por favor, use um nome de ficheiro único para cada sala do SimulationControl. O componente será desativado.", this);
+            enabled = false;
+            return;
+        }
+        usedFilePaths.Add(fullPath);
+    }
+
+    private void OnDestroy()
+    {
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            string fullPath = Path.GetFullPath(FilePath);
+            usedFilePaths.Remove(fullPath);
+        }
+    }
+
     private void OnApplicationQuit() => SaveDataInDevice();
 
     private void SaveDataInDevice()

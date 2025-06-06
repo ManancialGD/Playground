@@ -28,13 +28,10 @@ public class VisualizeAlgorithms : MonoBehaviour
 #if UNITY_EDITOR
     public void OnDrawGizmos()
     {
-        if (!Application.isPlaying)
+        if (!Application.isPlaying || !started || EntityAI == null || EntityAI.HidingScores == null)
             return;
 
-        if (!started)
-            return;
-
-        var scores = simulationControl.ScoresDatabase.Scores;
+        var scores = EntityAI.HidingScores.Scores;
         if (scores == null || scores.Count == 0)
             return;
 
@@ -46,7 +43,7 @@ public class VisualizeAlgorithms : MonoBehaviour
             var spot = scores.Keys.ElementAt(i);
             float value = scores.Values.ElementAt(i);
             Gizmos.color = new Color(1f - (value - min) / (max - min), value / max, 0f);
-            Gizmos.DrawLine(simulationControl.TrainingEntity.transform.position, spot.Position);
+            Gizmos.DrawLine(EntityAI.transform.position, spot.Position);
         }
     }
 

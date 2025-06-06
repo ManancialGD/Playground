@@ -17,7 +17,6 @@ public class SimulationControl : MonoBehaviour
 
     [SerializeField]
     public float MapMaxDistance = 0;
-    public ScoresDatabase ScoresDatabase { get; set; } = new ScoresDatabase();
     public ScoresDatabase HeuristicDatabase { get; set; } = new ScoresDatabase();
     public EntityAIConfiguration CurrentConfig { get; private set; } = null;
     EntityAIConfiguration configHistory = new EntityAIConfiguration();
@@ -27,7 +26,6 @@ public class SimulationControl : MonoBehaviour
 
     [SerializeField]
     private VisualizeAlgorithms visualizeAlgorithms;
-    public HidePoint CurrentBestPoint => ScoresDatabase.CurrentBestPoint;
 
     [SerializeField]
     public LayerMask mapLayer;
@@ -55,7 +53,6 @@ public class SimulationControl : MonoBehaviour
     {
         CurrentConfig = GetConfig();
         HeuristicDatabase = scoresFileSystem.LoadData();
-        ScoresDatabase = HeuristicDatabase.Clear();
         databaseLoaded = true;
 
         Debug.Log("Database loaded successfully");
@@ -70,9 +67,6 @@ public class SimulationControl : MonoBehaviour
         if (!same)
         {
             CurrentConfig = GetConfig();
-
-            foreach (HidePoint point in ScoresDatabase.Scores.Keys)
-                point.ChangeEntityConfig(CurrentConfig);
 
             foreach (HidePoint point in HeuristicDatabase.Scores.Keys)
                 point.ChangeEntityConfig(CurrentConfig);
@@ -142,13 +136,13 @@ public class SimulationControl : MonoBehaviour
 
         foreach (Collider col in colliders)
         {
-            if (col.gameObject.CompareTag("World")) // Filtra se necessário
+            if (col.gameObject.CompareTag("World"))
             {
                 return col.gameObject;
             }
         }
 
-        return null; // Retorna null se nada for encontrado
+        return null;
     }
 
     float GetWallWidth(Transform wallTransform, Vector3 playerPosition)

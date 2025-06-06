@@ -8,7 +8,7 @@ using UnityEngine;
 public class HidePoint
 {
     // Dependências
-    private readonly EnemyAI enemyAI;
+    private EnemyAI enemyAI;
     private readonly SimulationControl simulationControl;
     private EntityAIConfiguration config;
     public float lastInteractionTime;
@@ -51,6 +51,15 @@ public class HidePoint
         UpdateCache();
     }
 
+    public HidePoint Clone()
+    {
+        var clonedPoint = new HidePoint(Position, config, enemyAI, simulationControl);
+        clonedPoint.Report.SetInteractionsNumber(Report.InteractionsNumber);
+        return clonedPoint;
+    }
+
+    public void SetAgentReference(EnemyAI agent) => enemyAI = agent;
+
     public void ChangeEntityConfig(EntityAIConfiguration config) => this.config = config;
 
     private float UpdateCache()
@@ -60,14 +69,13 @@ public class HidePoint
         lastZoneScore = CalculateZoneScore();
         lastHeuristic = CalculateHeuristic();
         currentScore = CalculateCompositeScore();
-        simulationControl.HeuristicDatabase.SetScore(this, currentScore);
 
         return currentScore;
     }
 
     private float CalculateCompositeScore()
     {
-        if (Position == Vector3.zero || !simulationControl.ScoresDatabase.HasPoint(this))
+        if (Position == Vector3.zero || !simulationControl.HeuristicDatabase.HasPoint(this))
             return 0f;
 
         // Cálculo das componentes do score
@@ -144,7 +152,7 @@ public class HidePoint
     private float CalculateAverageDistanceScore()
     {
         var validPoints = simulationControl
-            .ScoresDatabase.Scores.Keys.Where(p => p != this)
+            .HeuristicDatabase.Scores.Keys.Where(p => p != this)
             .Select(p => Vector3.Distance(Position, p.Position))
             .DefaultIfEmpty();
 
@@ -172,7 +180,7 @@ public class HidePoint
     private float CalculateZoneScore(int neighbors = 5)
     {
         var nearest = simulationControl
-            .ScoresDatabase.Scores.Keys.Where(p => p != this)
+            .HeuristicDatabase.Scores.Keys.Where(p => p != this)
             .OrderBy(p => Vector3.Distance(p.Position, Position))
             .Take(neighbors)
             .Select(p => Vector3.Distance(enemyAI.transform.position, p.Position));
@@ -182,7 +190,7 @@ public class HidePoint
 
     private float GetNormalizedScore()
     {
-        return simulationControl.ScoresDatabase.normalized.Scores.TryGetValue(
+        return simulationControl.HeuristicDatabase.normalized.Scores.TryGetValue(
             this,
             out float normalized
         )

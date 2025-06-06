@@ -37,7 +37,6 @@ public class ManualHidePoint : MonoBehaviour
                 simulationControl
             );
             simulationControl.HeuristicDatabase.SetScore(newPoint, 0f);
-            simulationControl.ScoresDatabase.SetScore(newPoint, 0f);
         }
     }
 }
