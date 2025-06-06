@@ -134,7 +134,6 @@ public class EnemyAI : MonoBehaviour
 
         HidingScores = simulationControl.ScoresDatabase;
         historyDistanceFromEnemy = Vector3.Distance(transform.position, Player.position);
-        GetAllMapPoints(100f, 1f);
     }
 
     private void FixedUpdate()
@@ -504,21 +503,5 @@ public class EnemyAI : MonoBehaviour
                 yield return wait;
             }
         }
-    }
-
-    private void GetAllMapPoints(float maxRadius = 100f, float step = 1f) =>
-        StartCoroutine(FindAllPointsInMap(maxRadius, step));
-
-    private IEnumerator FindAllPointsInMap(float maxRadius, float step)
-    {
-        SphereCollider collider = GetComponentInChildren<SphereCollider>();
-        float radius = 1f;
-        while (radius < maxRadius)
-        {
-            radius += step;
-            collider.radius = radius;
-            yield return null; // Espera um frame para atualizar o raio do collider
-        }
-        collider.enabled = false;
     }
 }
