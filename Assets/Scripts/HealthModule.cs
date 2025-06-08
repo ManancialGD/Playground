@@ -1,3 +1,4 @@
+using System;
 using NaughtyAttributes.Test;
 using UnityEngine;
 
@@ -7,7 +8,8 @@ public class HealthModule : MonoBehaviour
     [SerializeField] private Animator anim;
     private int currentHealth = 100;
 
-    public bool isDead { get; private set; } = false;
+    public bool IsDead { get; private set; } = false;
+    public event Action Died;
 
     private RagDollLimb[] ragDollLimbs;
 
@@ -29,7 +31,7 @@ public class HealthModule : MonoBehaviour
 
     public void TakeDamage(RagDollLimb limb, Vector3 hitPos, Vector3 direction)
     {
-        if (isDead) return;
+        if (IsDead) return;
         int damage = 0;
 
         switch (limb.ThisLimbType)
@@ -53,10 +55,11 @@ public class HealthModule : MonoBehaviour
         }
     }
 
-    public void Die(RagDollLimb limb, Vector3 direction)
+    private void Die(RagDollLimb limb, Vector3 direction)
     {
-        if (isDead) return;
-        isDead = true;
+        if (IsDead) return;
+        IsDead = true;
+        Died?.Invoke();
         ActivateRagdoll();
 
         Rigidbody rb = limb.GetComponent<Rigidbody>();
@@ -64,6 +67,14 @@ public class HealthModule : MonoBehaviour
         {
             rb.AddForce(direction * 5f, ForceMode.Impulse);
         }
+    }
+
+    public void DieByLaser()
+    {
+        if (IsDead) return;
+        IsDead = true;
+        Died?.Invoke();
+        ActivateRagdoll();
     }
 
     private void DeactivateRagdoll()
@@ -79,7 +90,7 @@ public class HealthModule : MonoBehaviour
     private void ActivateRagdoll()
     {
         anim.enabled = false;
-        
+
         foreach (var limb in ragDollLimbs)
         {
             limb.GetComponent<Rigidbody>().isKinematic = false;

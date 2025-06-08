@@ -12,6 +12,12 @@ public class Door : Interactable
     [SerializeField]
     private float triggerRadius = 0.25f;
 
+    [SerializeField]
+    private bool canOpen = true;
+
+    [SerializeField]
+    private bool isKillRoom = false;
+
     public Action<int> EnterRoom;
 
 
@@ -39,6 +45,10 @@ public class Door : Interactable
                     Array.ForEach(collisions, c => c.enabled = true);
                     enteredRoom = true;
                     anim.SetTrigger("Shut");
+                    if (isKillRoom)
+                    {
+                        FindAnyObjectByType<RoomManager>()?.KillWithLaser();
+                    }
                     break;
                 }
             }
@@ -50,11 +60,22 @@ public class Door : Interactable
     {
         base.Interact();
 
-        if (RoomManager.Instance.TryOpenDoor(RoomID))
+        if (canOpen)
+            OpenDoor();
+    }
+
+    public void OpenDoor()
+    {
+        if (FindAnyObjectByType<RoomManager>()?.TryOpenDoor(RoomID) == true)
         {
             Array.ForEach(collisions, c => c.enabled = false);
             anim.SetTrigger("Open");
         }
+    }
+
+    public void SetCanOpen(bool canOpen)
+    {
+        this.canOpen = canOpen;
     }
 
 #if UNITY_EDITOR

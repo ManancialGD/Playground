@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: b3c76f7156bee5649b31aecc013e7a16
   - enabled: 1
-    path: Assets/Scenes/Ines.unity
+    path: Assets/Scenes/Game.unity
     guid: c5f07b64c7874c04ba6ef7c144180b9d
   - enabled: 1
     path: Assets/Scenes/CharacterController.unity

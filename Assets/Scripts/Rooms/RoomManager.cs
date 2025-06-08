@@ -1,10 +1,11 @@
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    public static RoomManager Instance { get; private set; }
     [SerializeField] private int currentRoomID = 0;
 
     private int previusRoomID = 0;
@@ -14,22 +15,39 @@ public class RoomManager : MonoBehaviour
     private Room[] rooms;
 
     [SerializeField] private CustomCharacterController character;
+    [SerializeField] private Transform head;
+    [SerializeField] private LineRenderer laser;
+    [SerializeField] private string gameSceneName = "Game";
+    [SerializeField] private string menuSceneName = "MainMenu";
+    [SerializeField] private Button continueButton;
 
     private Room currentRoom;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
+    private float timer;
+    private bool killing = false;
 
     private void Start()
     {
+        if (SceneManager.GetActiveScene().name == menuSceneName && continueButton != null)
+        {
+            int i = PlayerPrefs.GetInt("StartID", 0);
+            Debug.Log("[RoomManager] StartID from PlayerPrefs: " + i);
+
+            if (i == 0)
+                continueButton.gameObject.SetActive(false);
+            else
+                continueButton.gameObject.SetActive(true);
+        }
+
+        if (SceneManager.GetActiveScene().name != gameSceneName)
+            return;
+
+        startAtID = PlayerPrefs.GetInt("StartID", 0);
+
+        laser.gameObject.SetActive(false);
+        head = character.GetComponentsInChildren<RagDollLimb>()
+            .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)?.transform;
+
         Debug.Log("[RoomManager] Initializing rooms...");
         rooms = FindObjectsByType<Room>(FindObjectsSortMode.None);
 
@@ -63,6 +81,7 @@ public class RoomManager : MonoBehaviour
                 room.gameObject.SetActive(true);
                 currentRoom = room;
                 currentRoomID = spawnRoomID;
+                timer = room.Time;
             }
             else if (room.ID < spawnRoomID)
             {
@@ -100,6 +119,88 @@ public class RoomManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (SceneManager.GetActiveScene().name != gameSceneName)
+            return;
+
+        if (killing)
+        {
+            Vector3 laserStart = head.transform.position;
+            laserStart.y = laser.GetPosition(0).y;
+            laser.SetPosition(0, laserStart);
+
+            Vector3 laserEnd = head.transform.position;
+            laserEnd.y = laser.GetPosition(1).y;
+            laser.SetPosition(1, laserEnd);
+        }
+
+        if (currentRoom == null)
+            return;
+
+        if (!currentRoom.HasTimer) return;
+
+        timer -= Time.deltaTime;
+
+        if (timer <= 0f && !killing)
+        {
+            KillWithLaser();
+        }
+
+    }
+
+    private void OnGUI()
+    {
+        if (SceneManager.GetActiveScene().name != gameSceneName)
+            return;
+        if (currentRoom != null)
+        {
+            int minutes = Mathf.FloorToInt(timer / 60f);
+            int seconds = Mathf.CeilToInt(timer % 60f);
+
+            string timeText;
+            if (timer > 0)
+                timeText = string.Format("{0:00}:{1:00}", minutes, seconds);
+            else
+                timeText = "00:00";
+
+            GUI.Label(new Rect(10, 10, 200, 50), $"Timer: {timeText}");
+        }
+    }
+
+    public void KillWithLaser()
+    {
+        laser.gameObject.SetActive(true);
+        Vector3 laserStart = head.transform.position;
+        laserStart.y = laser.GetPosition(0).y;
+        laser.SetPosition(0, laserStart);
+
+        Vector3 laserEnd = head.transform.position;
+        laserEnd.y = laser.GetPosition(1).y;
+        laser.SetPosition(1, laserEnd);
+
+        killing = true;
+        Invoke(nameof(Kill), 2f);
+    }
+
+    private void Kill()
+    {
+        if (character.TryGetComponent(out HealthModule healthModule))
+        {
+            killing = false;
+            Vector3 laserStart = new(500, 0, 500);
+            laserStart.y = laser.GetPosition(0).y;
+            laser.SetPosition(0, laserStart);
+
+            Vector3 laserEnd = new(500, 0, 500);
+            laserEnd.y = laser.GetPosition(1).y;
+            laser.SetPosition(1, laserEnd);
+
+            laser.gameObject.SetActive(false);
+            healthModule.DieByLaser();
+        }
+    }
+
     public bool TryOpenDoor(int roomID)
     {
         Debug.Log($"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})");
@@ -119,6 +220,11 @@ public class RoomManager : MonoBehaviour
         currentRoom = room;
         currentRoomID = roomID;
 
+        PlayerPrefs.SetInt("StartID", currentRoomID);
+        PlayerPrefs.Save();
+
+        timer = room.Time;
+
         return true;
     }
 
@@ -136,5 +242,34 @@ public class RoomManager : MonoBehaviour
         {
             Debug.LogWarning($"[RoomManager] Previous room {previusRoomID} not found for destruction.");
         }
+    }
+
+    public void EnterNewGame()
+    {
+        startAtID = 0;
+
+        currentRoomID = startAtID;
+        previusRoomID = 0;
+
+        PlayerPrefs.SetInt("StartID", startAtID);
+        PlayerPrefs.Save();
+
+        timer = 0f;
+        killing = false;
+
+        SceneManager.LoadScene(gameSceneName);
+    }
+
+    public void ContinueGame()
+    {
+        startAtID = PlayerPrefs.GetInt("StartID", 0);
+
+        currentRoomID = startAtID;
+        previusRoomID = 0;
+
+        timer = 0f;
+        killing = false;
+
+        SceneManager.LoadScene(gameSceneName);
     }
 }
