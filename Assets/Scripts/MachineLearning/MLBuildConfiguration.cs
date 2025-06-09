@@ -33,7 +33,9 @@ public class MLBuildConfiguration : ScriptableObject
         enableMLDebugLogs = false;
         enableFileIO = false;
 
-        Debug.Log("[MLBuildConfiguration] Configured for PRODUCTION build - All ML features disabled for performance.");
+        Debug.Log(
+            "[MLBuildConfiguration] Configured for PRODUCTION build - All ML features disabled for performance."
+        );
     }
 
     [ContextMenu("Configure for Development Build")]
@@ -45,7 +47,9 @@ public class MLBuildConfiguration : ScriptableObject
         enableMLDebugLogs = true;
         enableFileIO = true;
 
-        Debug.Log("[MLBuildConfiguration] Configured for DEVELOPMENT build - All ML features enabled.");
+        Debug.Log(
+            "[MLBuildConfiguration] Configured for DEVELOPMENT build - All ML features enabled."
+        );
     }
 
     [ContextMenu("Configure for Testing Build")]
@@ -57,6 +61,8 @@ public class MLBuildConfiguration : ScriptableObject
         enableMLDebugLogs = false;
         enableFileIO = false;
 
-        Debug.Log("[MLBuildConfiguration] Configured for TESTING build - Core features enabled, expensive features disabled.");
+        Debug.Log(
+            "[MLBuildConfiguration] Configured for TESTING build - Core features enabled, expensive features disabled."
+        );
     }
 }
