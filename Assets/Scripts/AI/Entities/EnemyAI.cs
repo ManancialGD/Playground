@@ -11,9 +11,6 @@ using UnityEngine.AI;
 public class EnemyAI : MonoBehaviour
 {
     [SerializeField]
-    float Speed;
-
-    [SerializeField]
     string ReportName;
 
     [SerializeField]
@@ -22,6 +19,18 @@ public class EnemyAI : MonoBehaviour
     [SerializeField]
     EnemyState ForceState = EnemyState.None;
     public Transform Player;
+
+    [SerializeField]
+    Transform defendPoint;
+
+    [SerializeField]
+    float defendRadius = 15f;
+
+    [SerializeField]
+    float stealthDistance = 4f;
+
+    [SerializeField]
+    float stealthRecalculateInterval = 3f;
 
     public EnemyLineOfSightChecker LineOfSightChecker;
 
@@ -94,6 +103,11 @@ public class EnemyAI : MonoBehaviour
     private List<HidePoint> DetectedPositions = new List<HidePoint>(); // current detected positions (not all)
     public HidePoint TargetPoint { get; private set; } = null;
 
+    private float originalAgentSpeed;
+    private Coroutine currentAttackCoroutine;
+    private Vector3 currentStealthTarget;
+    private float lastStealthCalculation;
+
     [SerializeField]
     ScoresLearner HidingLearner;
 
@@ -105,6 +119,7 @@ public class EnemyAI : MonoBehaviour
     private void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
+        originalAgentSpeed = Agent.speed;
 
         if (Player == null)
         {
@@ -209,13 +224,19 @@ public class EnemyAI : MonoBehaviour
 
         int AttackOrDefense(float distance)
         {
+            Debug.Log(
+                $"[{gameObject.name}] AttackOrDefense called - defendPoint: {(defendPoint != null ? defendPoint.name : "NULL")}"
+            );
+
             if (ForceState != EnemyState.None)
             {
                 switch (ForceState)
                 {
                     case EnemyState.Attack:
+                        Debug.Log($"[{gameObject.name}] ForceState ATTACK → RETURNING 1");
                         return 1;
                     case EnemyState.Defense:
+                        Debug.Log($"[{gameObject.name}] ForceState DEFENSE → RETURNING 0");
                         return 0;
 
                     default:
@@ -224,10 +245,46 @@ public class EnemyAI : MonoBehaviour
                 }
             }
 
+            if (defendPoint != null)
+            {
+                float distanceToDefendPoint = Vector3.Distance(
+                    Player.position,
+                    defendPoint.position
+                );
+                Debug.Log(
+                    $"[{gameObject.name}] Distance to defend point: {distanceToDefendPoint:F1}, defendRadius: {defendRadius}"
+                );
+                if (distanceToDefendPoint <= defendRadius)
+                {
+                    Debug.Log(
+                        $"[{gameObject.name}] Player too close to defend point → ATTACK → RETURNING 1"
+                    );
+                    return 1; // attack - player is too close to defend point
+                }
+                else
+                {
+                    Debug.Log(
+                        $"[{gameObject.name}] Player far from defend point → DEFENSE → RETURNING 0"
+                    );
+                    return 0; // defense - player is far from defend point, hide
+                }
+            }
+
+            // Se não há ponto para defender, usa distância do inimigo como fallback
             if (distance <= MinPlayerDistance)
-                return 0; // defense
+            {
+                Debug.Log(
+                    $"[{gameObject.name}] No defend point, player close → ATTACK → RETURNING 1"
+                );
+                return 1; // attack - player is too close
+            }
             else
-                return 1; // attack
+            {
+                Debug.Log(
+                    $"[{gameObject.name}] No defend point, player far → DEFENSE → RETURNING 0"
+                );
+                return 0; // defense - player is far, hide
+            }
         }
 
         ExecutionNode defenseNode = new ExecutionNode(input =>
@@ -237,15 +294,27 @@ public class EnemyAI : MonoBehaviour
             return NodeStatus.Success;
         });
 
-        ControlNode chooseAttack = new ControlNode(beingSeen =>
+        ControlNode chooseAttack = new ControlNode(input =>
         {
-            // input should be ( float 0 or 1 where 0 is stealth and 1 is brute )
-            // enemy always attack stealth until it is caught
+            Debug.Log($"[{gameObject.name}] chooseAttack called - BeingSeen: {BeingSeen}");
 
-            if (beingSeen < 1)
-                return 0; // attack stealth
+            if (BeingSeen)
+            {
+                Debug.Log($"[{gameObject.name}] chooseAttack → BRUTE ATTACK (seen)");
+                return 1; // brute attack - player spotted us
+            }
+
+            Vector3 testStealthPos = CalculateStealthPosition(Player);
+            if (testStealthPos == Vector3.zero)
+            {
+                Debug.Log($"[{gameObject.name}] chooseAttack → BRUTE ATTACK (no stealth pos)");
+                return 1; // brute attack - no valid stealth position
+            }
             else
-                return 1; // attack brute
+            {
+                Debug.Log($"[{gameObject.name}] chooseAttack → STEALTH ATTACK");
+                return 0; // stealth attack - try to stay hidden
+            }
         });
 
         ExecutionNode stealthAttackNode = new ExecutionNode(input =>
@@ -263,8 +332,16 @@ public class EnemyAI : MonoBehaviour
 
         NodeStatus Defense(float value)
         {
+            Debug.Log(
+                $"[{gameObject.name}] DEFENSE EXECUTED! (This should NOT happen when player is close to defend point!)"
+            );
+
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
+            if (currentAttackCoroutine != null)
+                StopCoroutine(currentAttackCoroutine);
+
+            Agent.speed = originalAgentSpeed;
             MovementCoroutine = StartCoroutine(Hide(Player));
 
             return NodeStatus.Success;
@@ -309,11 +386,7 @@ public class EnemyAI : MonoBehaviour
         float distance = Vector3.Distance(transform.position, Player.position);
         historyDistanceFromEnemy = distance;
 
-        if (TreeRootAI.DecisionFunction(distance) != TreeRootAI.LastChildIndex)
-        {
-            TreeRootAI.Execute(distance);
-            Debug.LogWarning("Tree root AI changed state");
-        }
+        TreeRootAI.Execute(distance);
     }
 
     void ForceUpdateAI()
@@ -439,10 +512,157 @@ public class EnemyAI : MonoBehaviour
         return Vector3.zero;
     }
 
+    private Vector3 CalculateStealthPosition(Transform player)
+    {
+        Debug.Log($"[{gameObject.name}] CalculateStealthPosition called");
+        Vector3 playerPosition = player.position;
+        Vector3 playerForward = player.forward;
+
+        Vector3 behindPlayer = playerPosition - (playerForward * stealthDistance);
+
+        if (NavMesh.SamplePosition(behindPlayer, out NavMeshHit hit, 5f, Agent.areaMask))
+        {
+            Debug.Log($"[{gameObject.name}] Found stealth position behind player: {hit.position}");
+            return hit.position;
+        }
+
+        for (int angle = 45; angle <= 180; angle += 45)
+        {
+            Vector3 leftFlank = CalculateFlankPosition(
+                playerPosition,
+                playerForward,
+                angle,
+                stealthDistance
+            );
+            Vector3 rightFlank = CalculateFlankPosition(
+                playerPosition,
+                playerForward,
+                -angle,
+                stealthDistance
+            );
+
+            if (NavMesh.SamplePosition(leftFlank, out NavMeshHit leftHit, 3f, Agent.areaMask))
+            {
+                Debug.Log(
+                    $"[{gameObject.name}] Found stealth position on left flank: {leftHit.position}"
+                );
+                return leftHit.position;
+            }
+
+            if (NavMesh.SamplePosition(rightFlank, out NavMeshHit rightHit, 3f, Agent.areaMask))
+            {
+                Debug.Log(
+                    $"[{gameObject.name}] Found stealth position on right flank: {rightHit.position}"
+                );
+                return rightHit.position;
+            }
+        }
+
+        Debug.Log($"[{gameObject.name}] No valid stealth position found");
+        return Vector3.zero;
+    }
+
+    private bool IsValidStealthPosition(Vector3 position, Vector3 playerPosition)
+    {
+        if (!NavMesh.SamplePosition(position, out NavMeshHit hit, 5f, Agent.areaMask))
+        {
+            return false;
+        }
+
+        Vector3 validPosition = hit.position;
+
+        if (IsPositionBehindWall(validPosition, playerPosition))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsPositionBehindWall(Vector3 position, Vector3 playerPosition)
+    {
+        Vector3 directionToPlayer = (playerPosition - position).normalized;
+        float distanceToPlayer = Vector3.Distance(position, playerPosition);
+
+        if (
+            Physics.Raycast(
+                position,
+                directionToPlayer,
+                out RaycastHit hit,
+                distanceToPlayer,
+                WorldLayer
+            )
+        )
+        {
+            if (!hit.collider.CompareTag("Player"))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasClearPathToPlayer(Vector3 position, Vector3 playerPosition)
+    {
+        NavMeshPath testPath = new NavMeshPath();
+        if (NavMesh.CalculatePath(position, playerPosition, Agent.areaMask, testPath))
+        {
+            return testPath.status == NavMeshPathStatus.PathComplete;
+        }
+        return false;
+    }
+
+    private Vector3 FindFallbackStealthPosition(Vector3 playerPosition)
+    {
+        float[] distances =
+        {
+            stealthDistance * 0.5f,
+            stealthDistance * 1.5f,
+            stealthDistance * 2f,
+        };
+
+        foreach (float distance in distances)
+        {
+            for (int angle = 0; angle < 360; angle += 45)
+            {
+                Vector3 direction = Quaternion.AngleAxis(angle, Vector3.up) * Vector3.forward;
+                Vector3 testPosition = playerPosition + (direction * distance);
+
+                if (IsValidStealthPosition(testPosition, playerPosition))
+                {
+                    return testPosition;
+                }
+            }
+        }
+
+        return Vector3.zero;
+    }
+
+    private Vector3 CalculateFlankPosition(
+        Vector3 playerPos,
+        Vector3 playerForward,
+        float angle,
+        float distance
+    )
+    {
+        Quaternion rotation = Quaternion.AngleAxis(angle, Vector3.up);
+        Vector3 direction = rotation * (-playerForward);
+        return playerPos + (direction * distance);
+    }
+
     private NodeStatus StealthAttack(Transform player)
     {
-        Coroutine stealthCoroutine = StartCoroutine(StealthAttackBehaviour(player));
-        if (stealthCoroutine == null)
+        Debug.Log($"[{gameObject.name}] STEALTH ATTACK EXECUTED!");
+
+        if (currentAttackCoroutine != null)
+            StopCoroutine(currentAttackCoroutine);
+
+        currentStealthTarget = Vector3.zero;
+        lastStealthCalculation = 0f;
+
+        currentAttackCoroutine = StartCoroutine(StealthAttackBehaviour(player));
+        if (currentAttackCoroutine == null)
             return NodeStatus.Failure;
 
         return NodeStatus.Success;
@@ -450,8 +670,13 @@ public class EnemyAI : MonoBehaviour
 
     private NodeStatus BruteAttack(Transform player)
     {
-        Coroutine stealthCoroutine = StartCoroutine(StealthAttackBehaviour(player));
-        if (stealthCoroutine == null)
+        Debug.Log($"[{gameObject.name}] BRUTE ATTACK EXECUTED!");
+
+        if (currentAttackCoroutine != null)
+            StopCoroutine(currentAttackCoroutine);
+
+        currentAttackCoroutine = StartCoroutine(BruteAttackBehaviour(player));
+        if (currentAttackCoroutine == null)
             return NodeStatus.Failure;
 
         return NodeStatus.Success;
@@ -460,52 +685,108 @@ public class EnemyAI : MonoBehaviour
     private IEnumerator StealthAttackBehaviour(Transform player)
     {
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
+        Agent.speed = originalAgentSpeed * 0.8f;
+
+        currentStealthTarget = CalculateStealthPosition(player);
+        lastStealthCalculation = Time.time;
+
+        if (currentStealthTarget == Vector3.zero)
+        {
+            Debug.Log(
+                $"[{gameObject.name}] No valid stealth position found, switching to brute attack"
+            );
+            yield break;
+        }
+
+        Debug.Log($"[{gameObject.name}] Stealth target set to: {currentStealthTarget}");
+        Agent.SetDestination(currentStealthTarget);
+
+        bool hasReachedStealthPosition = false;
+
         while (true)
         {
-            NavMeshPath safePath = FindNormalPath(transform.position, player.position);
+            float distanceToTarget = Vector3.Distance(transform.position, currentStealthTarget);
+            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-            if (safePath == null)
+            if (!hasReachedStealthPosition && distanceToTarget <= 3f)
             {
-                Debug.LogError("Stealth path not found");
-                yield return wait;
-                continue;
+                hasReachedStealthPosition = true;
+                Debug.Log($"[{gameObject.name}] Reached stealth position, now attacking player");
+                Agent.SetDestination(player.position);
+                Agent.speed = originalAgentSpeed * 1.2f;
             }
-
-            if (safePath.corners.Length > 0)
+            else if (!hasReachedStealthPosition)
             {
-                Agent.SetPath(safePath);
+                if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
+                {
+                    Agent.SetDestination(currentStealthTarget);
+                }
             }
             else
             {
-                Debug.LogError("Stealth path not found");
-                yield return wait;
+                if (distanceToPlayer <= 2f)
+                {
+                    Debug.Log(
+                        $"[{gameObject.name}] Close enough to player, stealth attack complete"
+                    );
+                    yield break;
+                }
+
+                if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
+                {
+                    Agent.SetDestination(player.position);
+                }
             }
+
+            yield return wait;
         }
     }
 
     private IEnumerator BruteAttackBehaviour(Transform player)
     {
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
+        Agent.speed = originalAgentSpeed * 1f;
+
         while (true)
         {
-            NavMeshPath safePath = FindNormalPath(transform.position, player.position);
+            if (MovementCoroutine != null)
+                StopCoroutine(MovementCoroutine);
 
-            if (safePath == null)
-            {
-                Debug.LogError("Stealth path not found");
-                yield return wait;
-                continue;
-            }
+            Agent.SetDestination(player.position);
 
-            if (safePath.corners.Length > 0)
+            yield return wait;
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (defendPoint != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(defendPoint.position, defendRadius);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, defendPoint.position);
+        }
+
+        if (Player != null && Application.isPlaying)
+        {
+            Vector3 stealthPos = CalculateStealthPosition(Player);
+
+            if (stealthPos != Vector3.zero)
             {
-                Agent.SetPath(safePath);
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawWireSphere(stealthPos, 1f);
+                Gizmos.color = Color.blue;
+                Gizmos.DrawLine(transform.position, stealthPos);
             }
             else
             {
-                Debug.LogError("Stealth path not found");
-                yield return wait;
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireCube(Player.position + Vector3.up * 3f, Vector3.one);
             }
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(Player.position - (Player.forward * stealthDistance), 0.5f);
         }
     }
 }
