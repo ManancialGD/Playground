@@ -32,6 +32,25 @@ public class EnemyAI : MonoBehaviour
     [SerializeField]
     float stealthRecalculateInterval = 3f;
 
+    [Header("Shooting System")]
+    [SerializeField]
+    private Transform gunTip;
+
+    [SerializeField]
+    private ObjectPool bulletPool;
+
+    [SerializeField]
+    private float shootRate = 0.5f;
+
+    [SerializeField]
+    private float bulletSpeed = 200f;
+
+    [SerializeField]
+    private float shootingRange = 15f;
+
+    [SerializeField]
+    private LayerMask shootingLayers;
+
     public EnemyLineOfSightChecker LineOfSightChecker;
 
     [HideInInspector]
@@ -107,6 +126,10 @@ public class EnemyAI : MonoBehaviour
     private Coroutine currentAttackCoroutine;
     private Vector3 currentStealthTarget;
     private float lastStealthCalculation;
+
+    // Shooting variables
+    private bool canShoot = true;
+    private float lastShootTime;
 
     [SerializeField]
     ScoresLearner HidingLearner;
@@ -224,19 +247,13 @@ public class EnemyAI : MonoBehaviour
 
         int AttackOrDefense(float distance)
         {
-            Debug.Log(
-                $"[{gameObject.name}] AttackOrDefense called - defendPoint: {(defendPoint != null ? defendPoint.name : "NULL")}"
-            );
-
             if (ForceState != EnemyState.None)
             {
                 switch (ForceState)
                 {
                     case EnemyState.Attack:
-                        Debug.Log($"[{gameObject.name}] ForceState ATTACK → RETURNING 1");
                         return 1;
                     case EnemyState.Defense:
-                        Debug.Log($"[{gameObject.name}] ForceState DEFENSE → RETURNING 0");
                         return 0;
 
                     default:
@@ -251,21 +268,12 @@ public class EnemyAI : MonoBehaviour
                     Player.position,
                     defendPoint.position
                 );
-                Debug.Log(
-                    $"[{gameObject.name}] Distance to defend point: {distanceToDefendPoint:F1}, defendRadius: {defendRadius}"
-                );
                 if (distanceToDefendPoint <= defendRadius)
                 {
-                    Debug.Log(
-                        $"[{gameObject.name}] Player too close to defend point → ATTACK → RETURNING 1"
-                    );
                     return 1; // attack - player is too close to defend point
                 }
                 else
                 {
-                    Debug.Log(
-                        $"[{gameObject.name}] Player far from defend point → DEFENSE → RETURNING 0"
-                    );
                     return 0; // defense - player is far from defend point, hide
                 }
             }
@@ -273,16 +281,10 @@ public class EnemyAI : MonoBehaviour
             // Se não há ponto para defender, usa distância do inimigo como fallback
             if (distance <= MinPlayerDistance)
             {
-                Debug.Log(
-                    $"[{gameObject.name}] No defend point, player close → ATTACK → RETURNING 1"
-                );
                 return 1; // attack - player is too close
             }
             else
             {
-                Debug.Log(
-                    $"[{gameObject.name}] No defend point, player far → DEFENSE → RETURNING 0"
-                );
                 return 0; // defense - player is far, hide
             }
         }
@@ -296,25 +298,14 @@ public class EnemyAI : MonoBehaviour
 
         ControlNode chooseAttack = new ControlNode(input =>
         {
-            Debug.Log($"[{gameObject.name}] chooseAttack called - BeingSeen: {BeingSeen}");
-
             if (BeingSeen)
-            {
-                Debug.Log($"[{gameObject.name}] chooseAttack → BRUTE ATTACK (seen)");
                 return 1; // brute attack - player spotted us
-            }
 
             Vector3 testStealthPos = CalculateStealthPosition(Player);
             if (testStealthPos == Vector3.zero)
-            {
-                Debug.Log($"[{gameObject.name}] chooseAttack → BRUTE ATTACK (no stealth pos)");
                 return 1; // brute attack - no valid stealth position
-            }
             else
-            {
-                Debug.Log($"[{gameObject.name}] chooseAttack → STEALTH ATTACK");
                 return 0; // stealth attack - try to stay hidden
-            }
         });
 
         ExecutionNode stealthAttackNode = new ExecutionNode(input =>
@@ -327,15 +318,15 @@ public class EnemyAI : MonoBehaviour
             return BruteAttack(Player);
         });
 
-        root.AddChild(defenseNode).AddChild(chooseAttack);
+        // CORREÇÃO: A árvore estava mal estruturada!
+        // Quando AttackOrDefense retorna 0 → vai para defenseNode (índice 0)
+        // Quando AttackOrDefense retorna 1 → vai para chooseAttack (índice 1)
+        root.AddChild(defenseNode);      // índice 0 - DEFENSE
+        root.AddChild(chooseAttack);     // índice 1 - ATTACK
         chooseAttack.AddChild(stealthAttackNode).AddChild(bruteAttackNode);
 
         NodeStatus Defense(float value)
         {
-            Debug.Log(
-                $"[{gameObject.name}] DEFENSE EXECUTED! (This should NOT happen when player is close to defend point!)"
-            );
-
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
             if (currentAttackCoroutine != null)
@@ -514,7 +505,6 @@ public class EnemyAI : MonoBehaviour
 
     private Vector3 CalculateStealthPosition(Transform player)
     {
-        Debug.Log($"[{gameObject.name}] CalculateStealthPosition called");
         Vector3 playerPosition = player.position;
         Vector3 playerForward = player.forward;
 
@@ -522,7 +512,6 @@ public class EnemyAI : MonoBehaviour
 
         if (NavMesh.SamplePosition(behindPlayer, out NavMeshHit hit, 5f, Agent.areaMask))
         {
-            Debug.Log($"[{gameObject.name}] Found stealth position behind player: {hit.position}");
             return hit.position;
         }
 
@@ -543,22 +532,15 @@ public class EnemyAI : MonoBehaviour
 
             if (NavMesh.SamplePosition(leftFlank, out NavMeshHit leftHit, 3f, Agent.areaMask))
             {
-                Debug.Log(
-                    $"[{gameObject.name}] Found stealth position on left flank: {leftHit.position}"
-                );
                 return leftHit.position;
             }
 
             if (NavMesh.SamplePosition(rightFlank, out NavMeshHit rightHit, 3f, Agent.areaMask))
             {
-                Debug.Log(
-                    $"[{gameObject.name}] Found stealth position on right flank: {rightHit.position}"
-                );
                 return rightHit.position;
             }
         }
 
-        Debug.Log($"[{gameObject.name}] No valid stealth position found");
         return Vector3.zero;
     }
 
@@ -651,15 +633,64 @@ public class EnemyAI : MonoBehaviour
         return playerPos + (direction * distance);
     }
 
+    private bool CanShootAtPlayer(Transform player)
+    {
+        if (gunTip == null || bulletPool == null) return false;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+        if (distanceToPlayer > shootingRange) return false;
+
+        Vector3 directionToPlayer = (player.position - gunTip.position).normalized;
+
+        if (Physics.Raycast(gunTip.position, directionToPlayer, out RaycastHit hit, distanceToPlayer, shootingLayers))
+        {
+            return hit.collider.transform == player;
+        }
+
+        return true;
+    }
+
+    private void ShootAtPlayer(Transform player)
+    {
+        if (!canShoot || Time.time - lastShootTime < shootRate) return;
+
+        GameObject bullet = bulletPool.GetObject();
+        if (bullet == null) return;
+
+        if (!bullet.TryGetComponent<Rigidbody>(out Rigidbody rb))
+        {
+            if (bullet.TryGetComponent<IPooledObject>(out var pooledObject))
+                pooledObject.ReturnToPoll();
+            return;
+        }
+
+        bullet.transform.position = gunTip.position;
+        bullet.transform.parent = null;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        Vector3 targetPosition = player.position + Vector3.up * 1.5f;
+        Vector3 direction = (targetPosition - gunTip.position).normalized;
+
+        rb.linearVelocity = direction * bulletSpeed;
+
+        lastShootTime = Time.time;
+        canShoot = false;
+        Invoke(nameof(ResetCanShoot), shootRate);
+    }
+
+    private void ResetCanShoot()
+    {
+        canShoot = true;
+    }
+
     private NodeStatus StealthAttack(Transform player)
     {
-        Debug.Log($"[{gameObject.name}] STEALTH ATTACK EXECUTED!");
-
         if (currentAttackCoroutine != null)
             StopCoroutine(currentAttackCoroutine);
 
         currentStealthTarget = Vector3.zero;
-        lastStealthCalculation = 0f;
 
         currentAttackCoroutine = StartCoroutine(StealthAttackBehaviour(player));
         if (currentAttackCoroutine == null)
@@ -670,8 +701,6 @@ public class EnemyAI : MonoBehaviour
 
     private NodeStatus BruteAttack(Transform player)
     {
-        Debug.Log($"[{gameObject.name}] BRUTE ATTACK EXECUTED!");
-
         if (currentAttackCoroutine != null)
             StopCoroutine(currentAttackCoroutine);
 
@@ -692,13 +721,9 @@ public class EnemyAI : MonoBehaviour
 
         if (currentStealthTarget == Vector3.zero)
         {
-            Debug.Log(
-                $"[{gameObject.name}] No valid stealth position found, switching to brute attack"
-            );
             yield break;
         }
 
-        Debug.Log($"[{gameObject.name}] Stealth target set to: {currentStealthTarget}");
         Agent.SetDestination(currentStealthTarget);
 
         bool hasReachedStealthPosition = false;
@@ -711,7 +736,6 @@ public class EnemyAI : MonoBehaviour
             if (!hasReachedStealthPosition && distanceToTarget <= 3f)
             {
                 hasReachedStealthPosition = true;
-                Debug.Log($"[{gameObject.name}] Reached stealth position, now attacking player");
                 Agent.SetDestination(player.position);
                 Agent.speed = originalAgentSpeed * 1.2f;
             }
@@ -726,9 +750,6 @@ public class EnemyAI : MonoBehaviour
             {
                 if (distanceToPlayer <= 2f)
                 {
-                    Debug.Log(
-                        $"[{gameObject.name}] Close enough to player, stealth attack complete"
-                    );
                     yield break;
                 }
 
@@ -745,14 +766,30 @@ public class EnemyAI : MonoBehaviour
     private IEnumerator BruteAttackBehaviour(Transform player)
     {
         WaitForSeconds wait = new WaitForSeconds(UpdateFrequency);
-        Agent.speed = originalAgentSpeed * 1f;
+        Agent.speed = originalAgentSpeed * 1.2f;
 
         while (true)
         {
             if (MovementCoroutine != null)
                 StopCoroutine(MovementCoroutine);
 
-            Agent.SetDestination(player.position);
+            float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+            if (distanceToPlayer <= shootingRange && CanShootAtPlayer(player))
+            {
+                Agent.isStopped = true;
+
+                Vector3 directionToPlayer = (player.position - transform.position).normalized;
+                Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+
+                ShootAtPlayer(player);
+            }
+            else
+            {
+                Agent.isStopped = false;
+                Agent.SetDestination(player.position);
+            }
 
             yield return wait;
         }
