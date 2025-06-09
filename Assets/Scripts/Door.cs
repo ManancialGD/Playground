@@ -42,7 +42,7 @@ public class Door : Interactable
                 if (hit.GetComponent<CustomCharacterController>() != null)
                 {
                     EnterRoom?.Invoke(RoomID);
-                    Array.ForEach(collisions, c => c.enabled = true);
+                    Invoke(nameof(EnableColl), 0.25f);
                     enteredRoom = true;
                     anim.SetTrigger("Shut");
                     if (isKillRoom)
@@ -53,6 +53,11 @@ public class Door : Interactable
                 }
             }
         }
+    }
+
+    private void EnableColl()
+    {
+        Array.ForEach(collisions, c => c.enabled = true);
     }
 
 
@@ -66,7 +71,7 @@ public class Door : Interactable
 
     public void OpenDoor()
     {
-        if (FindAnyObjectByType<RoomManager>()?.TryOpenDoor(RoomID) == true)
+        if (FindAnyObjectByType<RoomManager>()?.TryOpenDoor(RoomID, isKillRoom) == true)
         {
             Array.ForEach(collisions, c => c.enabled = false);
             anim.SetTrigger("Open");

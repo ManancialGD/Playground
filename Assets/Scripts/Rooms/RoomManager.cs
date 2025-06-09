@@ -7,14 +7,12 @@ using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    public static RoomManager Instance { get; private set; }
-
     [SerializeField]
     private int currentRoomID = 0;
 
     public int CurrentRoomID => currentRoomID;
 
-    public static event Action<int> OnRoomChanged;
+    public event Action<int> OnRoomChanged;
 
     private int previusRoomID = 0;
 
@@ -45,17 +43,6 @@ public class RoomManager : MonoBehaviour
     private float timer;
     private bool killing = false;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-
     private void Start()
     {
         if (SceneManager.GetActiveScene().name == menuSceneName && continueButton != null)
@@ -69,8 +56,13 @@ public class RoomManager : MonoBehaviour
                 continueButton.gameObject.SetActive(true);
         }
 
+
+        Debug.Log("[RoomManager] Active scene:  {SceneManager.GetActiveScene().name}, Game Scene {gameSceneName}");
         if (SceneManager.GetActiveScene().name != gameSceneName)
+        {
+            Debug.Log("[RoomManager] Not in game scene, skipping initialization.");
             return;
+        }
 
         startAtID = PlayerPrefs.GetInt("StartID", 0);
 
@@ -240,7 +232,7 @@ public class RoomManager : MonoBehaviour
         }
     }
 
-    public bool TryOpenDoor(int roomID)
+    public bool TryOpenDoor(int roomID, bool isDeadRoom)
     {
         Debug.Log(
             $"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})"
@@ -263,8 +255,11 @@ public class RoomManager : MonoBehaviour
         currentRoom = room;
         currentRoomID = roomID;
 
-        PlayerPrefs.SetInt("StartID", currentRoomID);
-        PlayerPrefs.Save();
+        if (!isDeadRoom)
+        {
+            PlayerPrefs.SetInt("StartID", currentRoomID);
+            PlayerPrefs.Save();
+        }
 
         timer = room.Time;
 
@@ -289,35 +284,6 @@ public class RoomManager : MonoBehaviour
                 $"[RoomManager] Previous room {previusRoomID} not found for destruction."
             );
         }
-    }
-
-    public void EnterNewGame()
-    {
-        startAtID = 0;
-
-        currentRoomID = startAtID;
-        previusRoomID = 0;
-
-        PlayerPrefs.SetInt("StartID", startAtID);
-        PlayerPrefs.Save();
-
-        timer = 0f;
-        killing = false;
-
-        SceneManager.LoadScene(gameSceneName);
-    }
-
-    public void ContinueGame()
-    {
-        startAtID = PlayerPrefs.GetInt("StartID", 0);
-
-        currentRoomID = startAtID;
-        previusRoomID = 0;
-
-        timer = 0f;
-        killing = false;
-
-        SceneManager.LoadScene(gameSceneName);
     }
 
     public void EnterNewGame()
