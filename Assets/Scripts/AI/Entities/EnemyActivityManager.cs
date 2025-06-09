@@ -11,14 +11,22 @@ public class EnemyActivityManager : MonoBehaviour
     private void Start()
     {
         RoomManager.OnRoomChanged += OnRoomChanged;
-        SetScriptsEnabled(false);
 
-        Debug.Log(
-            $"[EnemyActivityManager] Room {roomID}: Waiting for RoomManager initialization..."
-        );
+        if (RoomManager.Instance != null)
+        {
+            bool shouldBeEnabled = RoomManager.Instance.CurrentRoomID == roomID;
+            SetScriptsEnabled(shouldBeEnabled);
+        }
+        else
+        {
+            SetScriptsEnabled(false);
+        }
     }
 
-    private void OnDestroy() => RoomManager.OnRoomChanged -= OnRoomChanged;
+    private void OnDestroy()
+    {
+        RoomManager.OnRoomChanged -= OnRoomChanged;
+    }
 
     private void OnRoomChanged(int newRoomID)
     {

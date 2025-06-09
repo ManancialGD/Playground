@@ -7,7 +7,14 @@ using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    [SerializeField] private int currentRoomID = 0;
+    public static RoomManager Instance { get; private set; }
+
+    [SerializeField]
+    private int currentRoomID = 0;
+
+    public int CurrentRoomID => currentRoomID;
+
+    public static event Action<int> OnRoomChanged;
 
     private int previusRoomID = 0;
 
@@ -15,17 +22,39 @@ public class RoomManager : MonoBehaviour
 
     private Room[] rooms;
 
-    [SerializeField] private CustomCharacterController character;
-    [SerializeField] private Transform head;
-    [SerializeField] private LineRenderer laser;
-    [SerializeField] private string gameSceneName = "Game";
-    [SerializeField] private string menuSceneName = "MainMenu";
-    [SerializeField] private Button continueButton;
+    [SerializeField]
+    private CustomCharacterController character;
+
+    [SerializeField]
+    private Transform head;
+
+    [SerializeField]
+    private LineRenderer laser;
+
+    [SerializeField]
+    private string gameSceneName = "Game";
+
+    [SerializeField]
+    private string menuSceneName = "MainMenu";
+
+    [SerializeField]
+    private Button continueButton;
 
     private Room currentRoom;
 
     private float timer;
     private bool killing = false;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     private void Start()
     {
@@ -46,8 +75,10 @@ public class RoomManager : MonoBehaviour
         startAtID = PlayerPrefs.GetInt("StartID", 0);
 
         laser.gameObject.SetActive(false);
-        head = character.GetComponentsInChildren<RagDollLimb>()
-            .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)?.transform;
+        head = character
+            .GetComponentsInChildren<RagDollLimb>()
+            .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)
+            ?.transform;
 
         Debug.Log("[RoomManager] Initializing rooms...");
         rooms = FindObjectsByType<Room>(FindObjectsSortMode.None);
@@ -123,6 +154,8 @@ public class RoomManager : MonoBehaviour
         {
             Debug.LogWarning("[RoomManager] Character controller not found!");
         }
+
+        OnRoomChanged?.Invoke(currentRoomID);
     }
 
     private void Update()
@@ -144,7 +177,8 @@ public class RoomManager : MonoBehaviour
         if (currentRoom == null)
             return;
 
-        if (!currentRoom.HasTimer) return;
+        if (!currentRoom.HasTimer)
+            return;
 
         timer -= Time.deltaTime;
 
@@ -152,7 +186,6 @@ public class RoomManager : MonoBehaviour
         {
             KillWithLaser();
         }
-
     }
 
     private void OnGUI()
@@ -234,6 +267,8 @@ public class RoomManager : MonoBehaviour
         PlayerPrefs.Save();
 
         timer = room.Time;
+
+        OnRoomChanged?.Invoke(currentRoomID);
 
         return true;
     }
