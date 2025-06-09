@@ -78,7 +78,6 @@ crashlytics-build.properties
 /[Aa]ssets/[Tt]extMesh Pro
 
 # Textures, Sounds
-/[Aa]ssets/[Tt]extures/*
 /[Aa]ssets/[Ss]ounds/*
 
 /[Aa]ssets/StreamingAssets/*
