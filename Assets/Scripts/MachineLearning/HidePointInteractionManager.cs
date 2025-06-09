@@ -48,7 +48,10 @@ public class HidePointInteractionReport
             InteractionsNumber
         );
 
-        learner.LearnFromReport(report);
+        if (learner != null)
+        {
+            learner.LearnFromReport(report);
+        }
 
         UpdateReport(distance, expositionTime, reactionTime);
     }

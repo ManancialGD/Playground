@@ -7,6 +7,9 @@ using UnityEngine.AI;
 public class SimulationControl : MonoBehaviour
 {
     [SerializeField]
+    private bool enableLearning = true;
+
+    [SerializeField]
     public float SimulationSpeed = 1.0f;
 
     [SerializeField]
@@ -32,6 +35,8 @@ public class SimulationControl : MonoBehaviour
 
     bool databaseLoaded = false;
     public bool DatabaseLoaded => databaseLoaded;
+
+    public bool IsLearningEnabled => enableLearning;
 
     private void Awake()
     {

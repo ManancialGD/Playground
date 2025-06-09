@@ -36,6 +36,11 @@ public class ScoresLearner : MonoBehaviour
 
     public void LearnFromReport(HidePointInstantReport report)
     {
+        if (!simulationControl.IsLearningEnabled)
+        {
+            return;
+        }
+
         lastSelectedPoint = report.Point;
 
         // 1) Atualizar learning rate com decaimento

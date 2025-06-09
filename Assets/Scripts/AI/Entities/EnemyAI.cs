@@ -278,6 +278,12 @@ public class EnemyAI : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(0.1f);
         while (true)
         {
+            if (!simulationControl.IsLearningEnabled)
+            {
+                yield return wait;
+                continue;
+            }
+
             float seen = BeingSeen ? 30 : 0;
             float dist = Vector3.Distance(transform.position, Player.position);
             float dot =
