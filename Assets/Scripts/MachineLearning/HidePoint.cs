@@ -66,6 +66,12 @@ public class HidePoint
     {
         if (!simulationControl.DatabaseLoaded)
             return 0f;
+
+        if (!simulationControl.IsLearningEnabled)
+        {
+            return currentScore;
+        }
+
         lastZoneScore = CalculateZoneScore();
         lastHeuristic = CalculateHeuristic();
         currentScore = CalculateCompositeScore();
@@ -78,7 +84,12 @@ public class HidePoint
         if (Position == Vector3.zero || !simulationControl.HeuristicDatabase.HasPoint(this))
             return 0f;
 
-        // Cálculo das componentes do score
+        if (!simulationControl.IsLearningEnabled)
+        {
+            float simpleScore = CalculateEnemyDistanceScore() * config.EnemyDistance_Importance;
+            return Mathf.Clamp01(simpleScore);
+        }
+
         float enemyDistanceScore = CalculateEnemyDistanceScore() * config.EnemyDistance_Importance;
         float directionScore =
             CalculateDirectionScore()
@@ -200,6 +211,11 @@ public class HidePoint
 
     public void OnInteract()
     {
+        if (!simulationControl.IsLearningEnabled)
+        {
+            return;
+        }
+
         float distance =
             Vector3.Distance(enemyAI.transform.position, enemyAI.Player.transform.position)
             / simulationControl.MapMaxDistance;

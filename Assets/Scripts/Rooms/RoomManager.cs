@@ -319,33 +319,4 @@ public class RoomManager : MonoBehaviour
 
         SceneManager.LoadScene(gameSceneName);
     }
-
-    public void EnterNewGame()
-    {
-        startAtID = 0;
-
-        currentRoomID = startAtID;
-        previusRoomID = 0;
-
-        PlayerPrefs.SetInt("StartID", startAtID);
-        PlayerPrefs.Save();
-
-        timer = 0f;
-        killing = false;
-
-        SceneManager.LoadScene(gameSceneName);
-    }
-
-    public void ContinueGame()
-    {
-        startAtID = PlayerPrefs.GetInt("StartID", 0);
-
-        currentRoomID = startAtID;
-        previusRoomID = 0;
-
-        timer = 0f;
-        killing = false;
-
-        SceneManager.LoadScene(gameSceneName);
-    }
 }
