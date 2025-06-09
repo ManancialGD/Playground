@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -6,7 +7,14 @@ using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour
 {
-    [SerializeField] private int currentRoomID = 0;
+    public static RoomManager Instance { get; private set; }
+
+    [SerializeField]
+    private int currentRoomID = 0;
+
+    public int CurrentRoomID => currentRoomID;
+
+    public static event Action<int> OnRoomChanged;
 
     private int previusRoomID = 0;
 
@@ -14,17 +22,39 @@ public class RoomManager : MonoBehaviour
 
     private Room[] rooms;
 
-    [SerializeField] private CustomCharacterController character;
-    [SerializeField] private Transform head;
-    [SerializeField] private LineRenderer laser;
-    [SerializeField] private string gameSceneName = "Game";
-    [SerializeField] private string menuSceneName = "MainMenu";
-    [SerializeField] private Button continueButton;
+    [SerializeField]
+    private CustomCharacterController character;
+
+    [SerializeField]
+    private Transform head;
+
+    [SerializeField]
+    private LineRenderer laser;
+
+    [SerializeField]
+    private string gameSceneName = "Game";
+
+    [SerializeField]
+    private string menuSceneName = "MainMenu";
+
+    [SerializeField]
+    private Button continueButton;
 
     private Room currentRoom;
 
     private float timer;
     private bool killing = false;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
 
     private void Start()
     {
@@ -45,8 +75,10 @@ public class RoomManager : MonoBehaviour
         startAtID = PlayerPrefs.GetInt("StartID", 0);
 
         laser.gameObject.SetActive(false);
-        head = character.GetComponentsInChildren<RagDollLimb>()
-            .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)?.transform;
+        head = character
+            .GetComponentsInChildren<RagDollLimb>()
+            .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)
+            ?.transform;
 
         Debug.Log("[RoomManager] Initializing rooms...");
         rooms = FindObjectsByType<Room>(FindObjectsSortMode.None);
@@ -58,7 +90,9 @@ public class RoomManager : MonoBehaviour
         Room spawnRoom = null;
         while (spawnRoomID >= 0)
         {
-            spawnRoom = rooms.FirstOrDefault(r => r.ID == spawnRoomID && r != null && r.SpawnPosition != null);
+            spawnRoom = rooms.FirstOrDefault(r =>
+                r.ID == spawnRoomID && r != null && r.SpawnPosition != null
+            );
             if (spawnRoom != null)
             {
                 break;
@@ -73,7 +107,8 @@ public class RoomManager : MonoBehaviour
 
         foreach (Room room in rooms)
         {
-            if (room == null) continue;
+            if (room == null)
+                continue;
 
             if (room.ID == spawnRoomID)
             {
@@ -109,7 +144,9 @@ public class RoomManager : MonoBehaviour
 
         if (character != null)
         {
-            Debug.Log($"[RoomManager] Placing character at spawn position of room {currentRoom.ID}");
+            Debug.Log(
+                $"[RoomManager] Placing character at spawn position of room {currentRoom.ID}"
+            );
             character.transform.position = currentRoom.SpawnPosition.position;
             character.transform.rotation = currentRoom.SpawnPosition.rotation;
         }
@@ -117,6 +154,8 @@ public class RoomManager : MonoBehaviour
         {
             Debug.LogWarning("[RoomManager] Character controller not found!");
         }
+
+        OnRoomChanged?.Invoke(currentRoomID);
     }
 
     private void Update()
@@ -138,7 +177,8 @@ public class RoomManager : MonoBehaviour
         if (currentRoom == null)
             return;
 
-        if (!currentRoom.HasTimer) return;
+        if (!currentRoom.HasTimer)
+            return;
 
         timer -= Time.deltaTime;
 
@@ -146,7 +186,6 @@ public class RoomManager : MonoBehaviour
         {
             KillWithLaser();
         }
-
     }
 
     private void OnGUI()
@@ -203,10 +242,14 @@ public class RoomManager : MonoBehaviour
 
     public bool TryOpenDoor(int roomID)
     {
-        Debug.Log($"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})");
+        Debug.Log(
+            $"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})"
+        );
         if (roomID <= currentRoomID)
         {
-            Debug.Log($"[RoomManager] Cannot open door to room {roomID}: already visited or invalid.");
+            Debug.Log(
+                $"[RoomManager] Cannot open door to room {roomID}: already visited or invalid."
+            );
             return false;
         }
 
@@ -225,6 +268,8 @@ public class RoomManager : MonoBehaviour
 
         timer = room.Time;
 
+        OnRoomChanged?.Invoke(currentRoomID);
+
         return true;
     }
 
@@ -240,8 +285,39 @@ public class RoomManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[RoomManager] Previous room {previusRoomID} not found for destruction.");
+            Debug.LogWarning(
+                $"[RoomManager] Previous room {previusRoomID} not found for destruction."
+            );
         }
+    }
+
+    public void EnterNewGame()
+    {
+        startAtID = 0;
+
+        currentRoomID = startAtID;
+        previusRoomID = 0;
+
+        PlayerPrefs.SetInt("StartID", startAtID);
+        PlayerPrefs.Save();
+
+        timer = 0f;
+        killing = false;
+
+        SceneManager.LoadScene(gameSceneName);
+    }
+
+    public void ContinueGame()
+    {
+        startAtID = PlayerPrefs.GetInt("StartID", 0);
+
+        currentRoomID = startAtID;
+        previusRoomID = 0;
+
+        timer = 0f;
+        killing = false;
+
+        SceneManager.LoadScene(gameSceneName);
     }
 
     public void EnterNewGame()
