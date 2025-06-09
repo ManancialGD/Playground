@@ -2,6 +2,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using DevConsole;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(CharacterView)),
 RequireComponent(typeof(CharacterSkin), typeof(CharacterShooter))]
@@ -14,6 +15,7 @@ public class CustomCharacterController : MonoBehaviour
     public CharacterStates CharacterState { get; private set; }
 
     [SerializeField] private Transform orientation;
+    [SerializeField] private CinemachineCamera deathCamera;
     [SerializeField] private float maxWalkSpeed = 8f;
     [SerializeField] private float maxRunSpeed = 12f;
     [SerializeField] private float acceleration = 32;
@@ -187,6 +189,21 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnDied()
     {
+        if (CharacterState == CharacterStates.Dead)
+            return;
+
+        Invoke(nameof(Revive), 3f);
+
+        if (deathCamera != null)
+        {
+            deathCamera.gameObject.SetActive(true);
+        }
+
         CharacterState = CharacterStates.Dead;
+    }
+
+    private void Revive()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

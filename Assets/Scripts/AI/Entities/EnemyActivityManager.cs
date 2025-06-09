@@ -8,13 +8,16 @@ public class EnemyActivityManager : MonoBehaviour
     [SerializeField]
     private int roomID;
 
+    private RoomManager roomManager;
+
     private void Start()
     {
-        RoomManager.OnRoomChanged += OnRoomChanged;
-
-        if (RoomManager.Instance != null)
+        roomManager = FindAnyObjectByType<RoomManager>();
+        if (roomManager != null)
         {
-            bool shouldBeEnabled = RoomManager.Instance.CurrentRoomID == roomID;
+            roomManager.OnRoomChanged += OnRoomChanged;
+
+            bool shouldBeEnabled = roomManager.CurrentRoomID == roomID;
             SetScriptsEnabled(shouldBeEnabled);
         }
         else
@@ -25,7 +28,7 @@ public class EnemyActivityManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        RoomManager.OnRoomChanged -= OnRoomChanged;
+        roomManager.OnRoomChanged -= OnRoomChanged;
     }
 
     private void OnRoomChanged(int newRoomID)
