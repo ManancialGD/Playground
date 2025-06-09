@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -175,31 +176,27 @@ public class RoomManager : MonoBehaviour
 
         timer -= Time.deltaTime;
 
+        int minutes = Mathf.FloorToInt(timer / 60f);
+        int seconds = Mathf.CeilToInt(timer % 60f);
+
+        string timeText;
+
+        if (timer > 0)
+            timeText = string.Format("{0:00}:{1:00}", minutes, seconds);
+        else
+            timeText = "00:00";
+
+        foreach (TextMeshProUGUI timerText in currentRoom.TimerTexts)
+        {
+            timerText.text = timeText;
+        }
+
         if (timer <= 0f && !killing)
         {
             KillWithLaser();
         }
     }
-
-    private void OnGUI()
-    {
-        if (SceneManager.GetActiveScene().name != gameSceneName)
-            return;
-        if (currentRoom != null)
-        {
-            int minutes = Mathf.FloorToInt(timer / 60f);
-            int seconds = Mathf.CeilToInt(timer % 60f);
-
-            string timeText;
-            if (timer > 0)
-                timeText = string.Format("{0:00}:{1:00}", minutes, seconds);
-            else
-                timeText = "00:00";
-
-            GUI.Label(new Rect(10, 10, 200, 50), $"Timer: {timeText}");
-        }
-    }
-
+    
     public void KillWithLaser()
     {
         laser.gameObject.SetActive(true);
