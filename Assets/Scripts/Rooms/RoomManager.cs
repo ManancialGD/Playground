@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -5,7 +6,13 @@ using UnityEngine;
 public class RoomManager : MonoBehaviour
 {
     public static RoomManager Instance { get; private set; }
-    [SerializeField] private int currentRoomID = 0;
+
+    [SerializeField]
+    private int currentRoomID = 0;
+
+    public int CurrentRoomID => currentRoomID;
+
+    public static event Action<int> OnRoomChanged;
 
     private int previusRoomID = 0;
 
@@ -13,7 +20,8 @@ public class RoomManager : MonoBehaviour
 
     private Room[] rooms;
 
-    [SerializeField] private CustomCharacterController character;
+    [SerializeField]
+    private CustomCharacterController character;
 
     private Room currentRoom;
 
@@ -40,7 +48,9 @@ public class RoomManager : MonoBehaviour
         Room spawnRoom = null;
         while (spawnRoomID >= 0)
         {
-            spawnRoom = rooms.FirstOrDefault(r => r.ID == spawnRoomID && r != null && r.SpawnPosition != null);
+            spawnRoom = rooms.FirstOrDefault(r =>
+                r.ID == spawnRoomID && r != null && r.SpawnPosition != null
+            );
             if (spawnRoom != null)
             {
                 break;
@@ -55,7 +65,8 @@ public class RoomManager : MonoBehaviour
 
         foreach (Room room in rooms)
         {
-            if (room == null) continue;
+            if (room == null)
+                continue;
 
             if (room.ID == spawnRoomID)
             {
@@ -90,7 +101,9 @@ public class RoomManager : MonoBehaviour
 
         if (character != null)
         {
-            Debug.Log($"[RoomManager] Placing character at spawn position of room {currentRoom.ID}");
+            Debug.Log(
+                $"[RoomManager] Placing character at spawn position of room {currentRoom.ID}"
+            );
             character.transform.position = currentRoom.SpawnPosition.position;
             character.transform.rotation = currentRoom.SpawnPosition.rotation;
         }
@@ -98,14 +111,20 @@ public class RoomManager : MonoBehaviour
         {
             Debug.LogWarning("[RoomManager] Character controller not found!");
         }
+
+        OnRoomChanged?.Invoke(currentRoomID);
     }
 
     public bool TryOpenDoor(int roomID)
     {
-        Debug.Log($"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})");
+        Debug.Log(
+            $"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})"
+        );
         if (roomID <= currentRoomID)
         {
-            Debug.Log($"[RoomManager] Cannot open door to room {roomID}: already visited or invalid.");
+            Debug.Log(
+                $"[RoomManager] Cannot open door to room {roomID}: already visited or invalid."
+            );
             return false;
         }
 
@@ -118,6 +137,8 @@ public class RoomManager : MonoBehaviour
 
         currentRoom = room;
         currentRoomID = roomID;
+
+        OnRoomChanged?.Invoke(currentRoomID);
 
         return true;
     }
@@ -134,7 +155,9 @@ public class RoomManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[RoomManager] Previous room {previusRoomID} not found for destruction.");
+            Debug.LogWarning(
+                $"[RoomManager] Previous room {previusRoomID} not found for destruction."
+            );
         }
     }
 }
