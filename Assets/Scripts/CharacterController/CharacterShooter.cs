@@ -104,10 +104,11 @@ public class CharacterShooter : MonoBehaviour
 
     private void Shoot()
     {
-        // GameObject bullet = bulletPool.GetObject();
-        GameObject bullet = Instantiate(bulletPrefab.gameObject, gunTip.position, Quaternion.identity);
+        GameObject bullet = bulletPool.GetObject();
+        // GameObject bullet = Instantiate(bulletPrefab.gameObject, gunTip.position, Quaternion.identity);
 
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        bullet.transform.position = gunTip.position;
         bullet.transform.parent = null;
 
         if (rb)

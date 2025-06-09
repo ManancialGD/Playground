@@ -29,9 +29,6 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.GetComponentInParent<CustomCharacterController>() != null)
-            return;
-
         if (other.TryGetComponent(out RagDollLimb ragDollLimb))
         {
             ragDollLimb.Damage(transform.position, rb.linearVelocity.normalized);

@@ -1,6 +1,8 @@
 using System;
 using NaughtyAttributes.Test;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.HighDefinition;
 
 public class HealthModule : MonoBehaviour
 {
@@ -52,6 +54,16 @@ public class HealthModule : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die(limb, direction);
+            return;
+        }
+
+        if (GetComponentInParent<CustomCharacterController>() != null)
+        {
+            var volume = FindAnyObjectByType<Volume>();
+            if (volume != null && volume.profile.TryGet<Vignette>(out var vignette))
+            {
+                vignette.color.value = new Color(currentHealth / 100, 0, 0);
+            }
         }
     }
 
