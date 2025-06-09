@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.TextCore.Text;
 
 public class Door : Interactable
@@ -19,6 +20,9 @@ public class Door : Interactable
     private bool isKillRoom = false;
 
     public Action<int> EnterRoom;
+
+    [SerializeField]
+    private UnityEvent EnterRoomEvent;
 
 
     private bool enteredRoom = false;
@@ -42,6 +46,7 @@ public class Door : Interactable
                 if (hit.GetComponent<CustomCharacterController>() != null)
                 {
                     EnterRoom?.Invoke(RoomID);
+                    EnterRoomEvent?.Invoke();
                     Invoke(nameof(EnableColl), 0.25f);
                     enteredRoom = true;
                     anim.SetTrigger("Shut");

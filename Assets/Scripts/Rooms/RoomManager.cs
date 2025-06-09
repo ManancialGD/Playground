@@ -238,6 +238,7 @@ public class RoomManager : MonoBehaviour
         Debug.Log(
             $"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})"
         );
+        if (roomID == 100) return true;
         if (roomID <= currentRoomID)
         {
             Debug.Log(
@@ -314,5 +315,14 @@ public class RoomManager : MonoBehaviour
         killing = false;
 
         SceneManager.LoadScene(gameSceneName);
+    }
+
+    public void EndGame()
+    {
+        PlayerPrefs.SetInt("StartID", 0);
+        PlayerPrefs.Save();
+
+        Cursor.lockState = CursorLockMode.None;
+        SceneManager.LoadScene(menuSceneName);
     }
 }
