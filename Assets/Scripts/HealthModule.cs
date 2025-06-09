@@ -58,14 +58,14 @@ public class HealthModule : MonoBehaviour
             return;
         }
 
-        if (GetComponentInParent<CustomCharacterController>() != null)
-        {
-            var volume = FindAnyObjectByType<Volume>();
-            if (volume != null && volume.profile.TryGet<Vignette>(out var vignette))
-            {
-                vignette.color.value = new Color(currentHealth / 100, 0, 0);
-            }
-        }
+        // if (GetComponentInParent<CustomCharacterController>() != null)
+        // {
+        //     var volume = FindAnyObjectByType<Volume>();
+        //     if (volume != null && volume.profile.TryGet<Vignette>(out var vignette))
+        //     {
+        //         vignette.color.value = new Color(currentHealth / 100, 0, 0);
+        //     }
+        // }
     }
 
     private void Die(RagDollLimb limb, Vector3 direction)
