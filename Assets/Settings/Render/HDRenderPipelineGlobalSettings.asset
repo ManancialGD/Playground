@@ -394,7 +394,7 @@ MonoBehaviour:
       type: {class: HDRPDefaultVolumeProfileSettings, ns: UnityEngine.Rendering.HighDefinition, asm: Unity.RenderPipelines.HighDefinition.Runtime}
       data:
         m_Version: 0
-        m_VolumeProfile: {fileID: 11400000, guid: cc4e7d57437a460468b528dba08007cc, type: 2}
+        m_VolumeProfile: {fileID: 11400000, guid: 7554964c76b2b6240b62f07a85ca2df1, type: 2}
     - rid: 1490453099449417742
       type: {class: SpecularFadeSettings, ns: UnityEngine.Rendering.HighDefinition, asm: Unity.RenderPipelines.HighDefinition.Runtime}
       data:
