@@ -1116,7 +1116,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1507821380963029762}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.55927193, y: -0.4326834, z: 0.4326834, w: 0.55927193}
+  m_LocalRotation: {x: 0.49999923, y: -0.5000003, z: 0.5000016, w: 0.4999989}
   m_LocalPosition: {x: -0.055, y: 0.14, z: 0.027}
   m_LocalScale: {x: 3.54, y: 3.54, z: 3.54}
   m_ConstrainProportionsScale: 1
@@ -1172,7 +1172,7 @@ Transform:
   - {fileID: 8431560431264474677}
   - {fileID: 3993213551888468343}
   m_Father: {fileID: 3171870316521267936}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 75.455}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 90}
 --- !u!1 &1508164630700180055
 GameObject:
   m_ObjectHideFlags: 0
@@ -1688,8 +1688,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1922662816668992015}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.0044864444, z: -0, w: 0.9999899}
-  m_LocalPosition: {x: -0.595, y: 0.9, z: -1.021}
+  m_LocalRotation: {x: -0, y: -0.9908493, z: -0, w: 0.13497277}
+  m_LocalPosition: {x: 1.011, y: 0.9, z: 3.218}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1700,7 +1700,7 @@ Transform:
   - {fileID: 4258109374257311159}
   - {fileID: 8939375864128295862}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0.514, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -164.486, z: 0}
 --- !u!114 &2132677581267863928
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1741,6 +1741,7 @@ MonoBehaviour:
   interactablesLayer:
     serializedVersion: 2
     m_Bits: 256
+  cameraTransform: {fileID: 0}
 --- !u!114 &4377719770554587352
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1776,9 +1777,9 @@ MonoBehaviour:
   maxDistance: 150
   cameraSafeDistance: 2
   shootRate: 0.15
-  bulletSpeed: 250
+  bulletSpeed: 50
   aimTarget: {fileID: 5558961206428353589}
-  cam: {fileID: 6129486102842373097}
+  cam: {fileID: 0}
   shootAction: {fileID: -6954097903470975531, guid: 35845fe01580c41289b024647b1d1c53, type: 3}
   gunTip: {fileID: 3993213551888468343}
   orientation: {fileID: 629598668345729025}
@@ -1788,9 +1789,11 @@ MonoBehaviour:
   enemiesLayer:
     serializedVersion: 2
     m_Bits: 512
+  environmentLayer:
+    serializedVersion: 2
+    m_Bits: 8
   bulletPool: {fileID: 0}
   muzzleFlash: {fileID: 5676338375754883174}
-  bulletSpawnPos: {fileID: 8939375864128295862}
   bulletPrefab: {fileID: 486053184311404137, guid: afecee50978086c43abc2f6a2c42068b, type: 3}
 --- !u!114 &201411035795984561
 MonoBehaviour:
@@ -2035,7 +2038,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097805711453914482}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.0044864104, z: 0, w: -0.9999899}
+  m_LocalRotation: {x: 0, y: -0.0044863573, z: 0, w: -0.99999}
   m_LocalPosition: {x: 0.48652068, y: 1.5029999, z: -1.5044261}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3627,8 +3630,6 @@ MonoBehaviour:
   - m_Rig: {fileID: 1147255548631469352}
     m_Active: 1
   - m_Rig: {fileID: 8708691478728300149}
-    m_Active: 1
-  - m_Rig: {fileID: 0}
     m_Active: 1
   m_Effectors: []
 --- !u!1 &3736844836451595352
@@ -6924,7 +6925,7 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 112.94148
+  m_Intensity: 13.205241
   m_Range: 25
   m_SpotAngle: 45
   m_InnerSpotAngle: 0
@@ -9729,6 +9730,7 @@ GameObject:
   - component: {fileID: 7040521405484498821}
   - component: {fileID: 6300512511486367477}
   - component: {fileID: 3049506746665226049}
+  - component: {fileID: 914112925495652205}
   m_Layer: 9
   m_Name: mixamorig2:Hips
   m_TagString: Untagged
@@ -9802,6 +9804,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &914112925495652205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8449082064218940660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dd081c4374d9c54f816209d92735a98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <ThisLimbType>k__BackingField: 1
 --- !u!1 &8460814084957304408
 GameObject:
   m_ObjectHideFlags: 0

@@ -24,6 +24,7 @@ public class CustomCharacterController : MonoBehaviour
     [SerializeField] private InputActionReference movementAction;
     [SerializeField] private CinemachineCamera aimCamera;
     [SerializeField] private Rigidbody rb;
+    [SerializeField] private HealthModule healthModule;
 
     private DevConsoleController gameConsole;
 
@@ -42,10 +43,14 @@ public class CustomCharacterController : MonoBehaviour
         aimCamera.gameObject.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
+
+        healthModule.Died += OnDied;
     }
 
     private void Update()
     {
+        if (CharacterState == CharacterStates.Dead) return;
+
         if (CharacterState != CharacterStates.Console)
         {
             characterView.UpdateView();
@@ -57,7 +62,8 @@ public class CustomCharacterController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (CharacterState == CharacterStates.Console) return;
+        if (CharacterState == CharacterStates.Console ||
+            CharacterState == CharacterStates.Dead) return;
 
         if (CharacterState == CharacterStates.Aimming)
             characterMovement.UpdateAimMovement();
@@ -80,8 +86,12 @@ public class CustomCharacterController : MonoBehaviour
 
         if (gameConsole == null)
             gameConsole = FindAnyObjectByType<DevConsoleController>();
+
         if (rb == null)
             rb = GetComponent<Rigidbody>();
+
+        if (healthModule == null)
+            healthModule = GetComponentInChildren<HealthModule>();
     }
 
     private void OnEnable()
@@ -125,7 +135,8 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnAimPerformed(InputAction.CallbackContext context)
     {
-        if (CharacterState == CharacterStates.Console) return;
+        if (CharacterState == CharacterStates.Console ||
+            CharacterState == CharacterStates.Dead) return;
         CharacterState = CharacterStates.Aimming;
         if (aimCamera != null)
             aimCamera.gameObject.SetActive(true);
@@ -133,14 +144,16 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnAimCanceled(InputAction.CallbackContext context)
     {
-        if (CharacterState == CharacterStates.Console) return;
+        if (CharacterState == CharacterStates.Console ||
+            CharacterState == CharacterStates.Dead) return;
         CharacterState = runningInput ? CharacterStates.Running : CharacterStates.Defaulft;
         if (aimCamera != null)
             aimCamera.gameObject.SetActive(false);
     }
     private void OnRunPerformed(InputAction.CallbackContext context)
     {
-        if (CharacterState == CharacterStates.Console) return;
+        if (CharacterState == CharacterStates.Console ||
+            CharacterState == CharacterStates.Dead) return;
         runningInput = true;
         if (CharacterState == CharacterStates.Aimming)
             aimCamera.gameObject.SetActive(false);
@@ -149,7 +162,8 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnRunCanceled(InputAction.CallbackContext context)
     {
-        if (CharacterState == CharacterStates.Console) return;
+        if (CharacterState == CharacterStates.Console ||
+            CharacterState == CharacterStates.Dead) return;
         runningInput = false;
         CharacterState = CharacterStates.Defaulft;
     }
@@ -162,10 +176,17 @@ public class CustomCharacterController : MonoBehaviour
 
     private void OnConsoleClosed()
     {
+        if (CharacterState == CharacterStates.Dead)
+            return;
         if (CharacterState == CharacterStates.Aimming)
             aimCamera.gameObject.SetActive(false);
 
         CharacterState = CharacterStates.Defaulft;
         Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    private void OnDied()
+    {
+        CharacterState = CharacterStates.Dead;
     }
 }

@@ -4,6 +4,5 @@ public enum CharacterStates
     Aimming,
     Running,
     Dead,
-    Executed,
     Console,
 }
