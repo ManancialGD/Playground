@@ -56,8 +56,9 @@ public class RoomManager : MonoBehaviour
                 continueButton.gameObject.SetActive(true);
         }
 
-
-        Debug.Log("[RoomManager] Active scene:  {SceneManager.GetActiveScene().name}, Game Scene {gameSceneName}");
+        Debug.Log(
+            "[RoomManager] Active scene:  {SceneManager.GetActiveScene().name}, Game Scene {gameSceneName}"
+        );
         if (SceneManager.GetActiveScene().name != gameSceneName)
         {
             Debug.Log("[RoomManager] Not in game scene, skipping initialization.");

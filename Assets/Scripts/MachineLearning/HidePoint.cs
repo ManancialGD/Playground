@@ -67,11 +67,6 @@ public class HidePoint
         if (!simulationControl.DatabaseLoaded)
             return 0f;
 
-        if (!simulationControl.IsLearningEnabled)
-        {
-            return currentScore;
-        }
-
         lastZoneScore = CalculateZoneScore();
         lastHeuristic = CalculateHeuristic();
         currentScore = CalculateCompositeScore();
@@ -83,12 +78,6 @@ public class HidePoint
     {
         if (Position == Vector3.zero || !simulationControl.HeuristicDatabase.HasPoint(this))
             return 0f;
-
-        if (!simulationControl.IsLearningEnabled)
-        {
-            float simpleScore = CalculateEnemyDistanceScore() * config.EnemyDistance_Importance;
-            return Mathf.Clamp01(simpleScore);
-        }
 
         float enemyDistanceScore = CalculateEnemyDistanceScore() * config.EnemyDistance_Importance;
         float directionScore =
@@ -211,20 +200,18 @@ public class HidePoint
 
     public void OnInteract()
     {
-        if (!simulationControl.IsLearningEnabled)
+        if (simulationControl.IsLearningEnabled)
         {
-            return;
+            float distance =
+                Vector3.Distance(enemyAI.transform.position, enemyAI.Player.transform.position)
+                / simulationControl.MapMaxDistance;
+            float expTime = enemyAI.BeingSeen ? enemyAI.UpdateFrequency : -enemyAI.UpdateFrequency;
+            float reactionTime =
+                distance
+                - (enemyAI.GetLastUpdateAIDistanceFromTarget() / simulationControl.MapMaxDistance);
+
+            Report.FeedReport(distance, expTime, reactionTime);
         }
-
-        float distance =
-            Vector3.Distance(enemyAI.transform.position, enemyAI.Player.transform.position)
-            / simulationControl.MapMaxDistance;
-        float expTime = enemyAI.BeingSeen ? enemyAI.UpdateFrequency : -enemyAI.UpdateFrequency;
-        float reactionTime =
-            distance
-            - (enemyAI.GetLastUpdateAIDistanceFromTarget() / simulationControl.MapMaxDistance);
-
-        Report.FeedReport(distance, expTime, reactionTime);
         UpdateCache();
     }
 
