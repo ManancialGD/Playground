@@ -5425,6 +5425,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2e4cea60e01a5c4bb9fad8d1304ef03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableLearning: 1
   SimulationSpeed: 1
   TrainingEntity: {fileID: 7334488957384146387}
   LearnerAI: {fileID: 682466365}
@@ -17434,6 +17435,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2e4cea60e01a5c4bb9fad8d1304ef03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enableLearning: 1
   SimulationSpeed: 1
   TrainingEntity: {fileID: 1299039942}
   LearnerAI: {fileID: 2049679512}
@@ -21482,6 +21484,10 @@ PrefabInstance:
     - target: {fileID: 6590463772488128003, guid: 89dcbb628e7702b4ca3acc8eb7698cfb, type: 3}
       propertyPath: <Time>k__BackingField
       value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 6590463772488128003, guid: 89dcbb628e7702b4ca3acc8eb7698cfb, type: 3}
+      propertyPath: <HasTimer>k__BackingField
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6627849048351987148, guid: 89dcbb628e7702b4ca3acc8eb7698cfb, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

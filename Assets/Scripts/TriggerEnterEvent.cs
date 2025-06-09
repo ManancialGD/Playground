@@ -8,6 +8,7 @@ public class TriggerEnterEvent : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Check if the other collider has a Rigidbody component
         if (other.GetComponent<CustomCharacterController>() != null)
         {
             onPlayerEnter?.Invoke();
