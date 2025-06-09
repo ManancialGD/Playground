@@ -7,6 +7,7 @@ public class HealthModule : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private Animator anim;
     private int currentHealth = 100;
+    public int CurrentHealth => currentHealth;  
 
     public bool IsDead { get; private set; } = false;
     public event Action Died;

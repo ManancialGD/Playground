@@ -26,7 +26,8 @@ public class CharacterHealthOverlay : MonoBehaviour
 
     private void Update()
     {
-        if (healthModule == null || overlayImage == null) return;
+        if (healthModule == null || overlayImage == null)
+            return;
 
         int currentHealth = GetCurrentHealth();
 
@@ -37,12 +38,7 @@ public class CharacterHealthOverlay : MonoBehaviour
         }
     }
 
-    private int GetCurrentHealth()
-    {
-        var field = typeof(HealthModule).GetField("currentHealth",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        return field != null ? (int)field.GetValue(healthModule) : maxHealth;
-    }
+    private int GetCurrentHealth() => healthModule.CurrentHealth;
 
     private void UpdateOverlay(int health)
     {
