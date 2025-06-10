@@ -99,6 +99,10 @@ public class RoomManager : MonoBehaviour
             // Debug.LogError("[RoomManager] No valid start room with a SpawnPosition found!");
         }
 
+        // Notify all EnemyActivityManagers BEFORE any room destruction
+        currentRoomID = spawnRoomID;
+        NotifyAllEnemyActivityManagers(currentRoomID);
+
         foreach (Room room in rooms)
         {
             if (room == null)
@@ -109,7 +113,6 @@ public class RoomManager : MonoBehaviour
                 // Debug.Log($"[RoomManager] Activating start room with ID {spawnRoomID}");
                 room.gameObject.SetActive(true);
                 currentRoom = room;
-                currentRoomID = spawnRoomID;
                 timer = room.Time;
             }
             else if (room.ID < spawnRoomID)
@@ -261,6 +264,9 @@ public class RoomManager : MonoBehaviour
 
         timer = room.Time;
 
+        // Ensure all EnemyActivityManagers are notified
+        NotifyAllEnemyActivityManagers(currentRoomID);
+
         OnRoomChanged?.Invoke(currentRoomID);
 
         return true;
@@ -320,5 +326,23 @@ public class RoomManager : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         SceneManager.LoadScene(menuSceneName);
+    }
+
+    private void NotifyAllEnemyActivityManagers(int newRoomID)
+    {
+        // Find all EnemyActivityManagers in the scene, including those that might be
+        // in rooms that are about to be destroyed
+        EnemyActivityManager[] allManagers = FindObjectsByType<EnemyActivityManager>(FindObjectsSortMode.None);
+
+        Debug.Log($"[RoomManager] Found {allManagers.Length} EnemyActivityManagers to notify about room change to {newRoomID}");
+
+        foreach (EnemyActivityManager manager in allManagers)
+        {
+            if (manager != null)
+            {
+                // Force immediate notification before any destruction occurs
+                manager.ForceRoomChanged(newRoomID);
+            }
+        }
     }
 }

@@ -34,7 +34,10 @@ public class HealthModule : MonoBehaviour
 
     public void TakeDamage(RagDollLimb limb, Vector3 hitPos, Vector3 direction)
     {
-        if (IsDead) return;
+        if (IsDead)
+        
+            return;
+        
         int damage = 0;
 
         switch (limb.ThisLimbType)

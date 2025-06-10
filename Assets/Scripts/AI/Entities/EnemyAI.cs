@@ -245,12 +245,14 @@ public class EnemyAI : MonoBehaviour
     private void HandleGainSight(Transform Target)
     {
         BeingSeen = true;
+        ForceUpdateAI(); // Force immediate AI update when player is spotted
         return;
     }
 
     private void HandleLoseSight(Transform Target)
     {
         BeingSeen = false;
+        Debug.Log($"[{gameObject.name}] HandleLoseSight - BeingSeen set to FALSE");
         return;
     }
 
@@ -298,13 +300,22 @@ public class EnemyAI : MonoBehaviour
                 switch (ForceState)
                 {
                     case EnemyState.Attack:
+                        Debug.Log($"[{gameObject.name}] AttackOrDefense: FORCED ATTACK mode");
                         return 1;
                     case EnemyState.Defense:
+                        Debug.Log($"[{gameObject.name}] AttackOrDefense: FORCED DEFENSE mode");
                         return 0;
                     default:
                         // Debug.LogError("Invalid EnemyState");
                         break;
                 }
+            }
+
+            // PRIORITY: If we can see the player, always attack!
+            if (BeingSeen)
+            {
+                Debug.Log($"[{gameObject.name}] AttackOrDefense: ATTACK - Player spotted! BeingSeen=true");
+                return 1; // attack - we can see the player
             }
 
             if (defendPoint != null)
@@ -315,10 +326,12 @@ public class EnemyAI : MonoBehaviour
                 );
                 if (distanceToDefendPoint <= defendRadius)
                 {
+                    Debug.Log($"[{gameObject.name}] AttackOrDefense: ATTACK - Player too close to defend point ({distanceToDefendPoint:F1} <= {defendRadius})");
                     return 1; // attack - player is too close to defend point
                 }
                 else
                 {
+                    Debug.Log($"[{gameObject.name}] AttackOrDefense: DEFENSE - Player far from defend point ({distanceToDefendPoint:F1} > {defendRadius})");
                     return 0; // defense - player is far from defend point, hide
                 }
             }
@@ -326,10 +339,12 @@ public class EnemyAI : MonoBehaviour
             // Se não há ponto para defender, usa distância do inimigo como fallback
             if (distance <= MinPlayerDistance)
             {
+                Debug.Log($"[{gameObject.name}] AttackOrDefense: ATTACK - Player too close ({distance:F1} <= {MinPlayerDistance})");
                 return 1; // attack - player is too close
             }
             else
             {
+                Debug.Log($"[{gameObject.name}] AttackOrDefense: DEFENSE - Player far away ({distance:F1} > {MinPlayerDistance})");
                 return 0; // defense - player is far, hide
             }
         }
@@ -344,13 +359,22 @@ public class EnemyAI : MonoBehaviour
         ControlNode chooseAttack = new ControlNode(input =>
         {
             if (BeingSeen)
+            {
+                Debug.Log($"[{gameObject.name}] AI Decision: BRUTE ATTACK - player spotted us!");
                 return 1; // brute attack - player spotted us
+            }
 
             Vector3 testStealthPos = CalculateStealthPosition(Player);
             if (testStealthPos == Vector3.zero)
+            {
+                Debug.Log($"[{gameObject.name}] AI Decision: BRUTE ATTACK - no valid stealth position");
                 return 1; // brute attack - no valid stealth position
+            }
             else
+            {
+                Debug.Log($"[{gameObject.name}] AI Decision: STEALTH ATTACK - trying to stay hidden");
                 return 0; // stealth attack - try to stay hidden
+            }
         });
 
         ExecutionNode stealthAttackNode = new ExecutionNode(input =>
@@ -1026,9 +1050,49 @@ public class EnemyAI : MonoBehaviour
 
     private void OnDead()
     {
-        healthModule.Died -= OnDead;
+        Debug.Log($"[{gameObject.name}] OnDead - Enemy is dying, disabling all AI components");
 
+        // Unsubscribe from events
+        if (healthModule != null)
+            healthModule.Died -= OnDead;
+
+        if (LineOfSightChecker != null)
+        {
+            LineOfSightChecker.OnGainSight -= HandleGainSight;
+            LineOfSightChecker.OnLoseSight -= HandleLoseSight;
+            LineOfSightChecker.enabled = false;
+        }
+
+        // Stop all AI activity
         StopAllCoroutines();
+
+        // Disable NavMeshAgent to stop all movement
+        if (Agent != null)
+        {
+            Agent.isStopped = true;
+            Agent.ResetPath();
+            Agent.enabled = false;
+        }
+
+        // Reset states
+        BeingSeen = false;
+
+        // Stop any ongoing movement or attack coroutines
+        if (MovementCoroutine != null)
+        {
+            StopCoroutine(MovementCoroutine);
+            MovementCoroutine = null;
+        }
+
+        if (currentAttackCoroutine != null)
+        {
+            StopCoroutine(currentAttackCoroutine);
+            currentAttackCoroutine = null;
+        }
+
+        // Disable this script last
         enabled = false;
+
+        Debug.Log($"[{gameObject.name}] OnDead - All AI components disabled, enemy is now completely inactive");
     }
 }

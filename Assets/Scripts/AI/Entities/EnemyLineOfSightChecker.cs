@@ -44,10 +44,13 @@ public class EnemyLineOfSightChecker : MonoBehaviour
             )
         )
         {
-            if (hit.collider && hit.collider.gameObject.CompareTag("EnemyAI"))
+            // Check if we hit the player directly or a component of the player
+            if (hit.collider && (hit.collider.gameObject.CompareTag("Player") ||
+                hit.collider.GetComponentInParent<CustomCharacterController>() != null))
+            {
                 return true;
+            }
         }
-        //}
 
         return false;
     }
@@ -61,19 +64,53 @@ public class EnemyLineOfSightChecker : MonoBehaviour
 
         while (true)
         {
+            // Check if enemy is dead - stop checking line of sight
+            if (enemyAI == null || !enemyAI.enabled)
+            {
+                Debug.Log($"[{gameObject.name}] LineOfSightChecker: Enemy is dead, stopping line of sight checks");
+                yield break;
+            }
+
+            // Check if this component is still enabled
+            if (!enabled)
+            {
+                Debug.Log($"[{gameObject.name}] LineOfSightChecker: Component disabled, stopping line of sight checks");
+                yield break;
+            }
+
             bool canSee = CheckLineOfSight(Target);
             if (canSee && !seen)
             {
+                Debug.Log($"[{enemyAI.gameObject.name}] GAINED SIGHT of player - switching to attack mode!");
                 OnGainSight?.Invoke(Target);
                 seen = true;
             }
             else if (!canSee && seen)
             {
+                Debug.Log($"[{enemyAI.gameObject.name}] LOST SIGHT of player");
                 OnLoseSight?.Invoke(Target);
                 seen = false;
             }
 
             yield return Wait;
         }
+    }
+
+    /// <summary>
+    /// Stop the line of sight checking coroutine
+    /// </summary>
+    public void StopChecking()
+    {
+        if (CheckForLineOfSightCoroutine != null)
+        {
+            StopCoroutine(CheckForLineOfSightCoroutine);
+            CheckForLineOfSightCoroutine = null;
+            Debug.Log($"[{gameObject.name}] LineOfSightChecker: Stopped checking line of sight");
+        }
+    }
+
+    private void OnDisable()
+    {
+        StopChecking();
     }
 }
