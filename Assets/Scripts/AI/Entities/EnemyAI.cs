@@ -43,7 +43,7 @@ public class EnemyAI : MonoBehaviour
     private float shootRate = 0.5f;
 
     [SerializeField]
-    private float bulletSpeed = 200f;
+    private float bulletSpeed = 50;
 
     [SerializeField]
     private float shootingRange = 15f;
@@ -126,6 +126,9 @@ public class EnemyAI : MonoBehaviour
     private Coroutine currentAttackCoroutine;
     private Vector3 currentStealthTarget;
     private float lastStealthCalculation;
+
+    [SerializeField]
+    private Transform aimTarget;
 
     // Shooting variables
     private bool canShoot = true;
@@ -321,8 +324,8 @@ public class EnemyAI : MonoBehaviour
         // CORREÇÃO: A árvore estava mal estruturada!
         // Quando AttackOrDefense retorna 0 → vai para defenseNode (índice 0)
         // Quando AttackOrDefense retorna 1 → vai para chooseAttack (índice 1)
-        root.AddChild(defenseNode);      // índice 0 - DEFENSE
-        root.AddChild(chooseAttack);     // índice 1 - ATTACK
+        root.AddChild(defenseNode); // índice 0 - DEFENSE
+        root.AddChild(chooseAttack); // índice 1 - ATTACK
         chooseAttack.AddChild(stealthAttackNode).AddChild(bruteAttackNode);
 
         NodeStatus Defense(float value)
@@ -635,30 +638,77 @@ public class EnemyAI : MonoBehaviour
 
     private bool CanShootAtPlayer(Transform player)
     {
-        if (gunTip == null || bulletPool == null) return false;
+        if (gunTip == null || bulletPool == null)
+        {
+            Debug.Log($"[{gameObject.name}] CanShoot: FALSE - gunTip or bulletPool is NULL");
+            return false;
+        }
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-        if (distanceToPlayer > shootingRange) return false;
+        if (distanceToPlayer > shootingRange)
+        {
+            Debug.Log(
+                $"[{gameObject.name}] CanShoot: FALSE - Too far ({distanceToPlayer:F1} > {shootingRange})"
+            );
+            return false;
+        }
 
         Vector3 directionToPlayer = (player.position - gunTip.position).normalized;
 
-        if (Physics.Raycast(gunTip.position, directionToPlayer, out RaycastHit hit, distanceToPlayer, shootingLayers))
+        if (
+            Physics.Raycast(
+                gunTip.position,
+                directionToPlayer,
+                out RaycastHit hit,
+                distanceToPlayer,
+                shootingLayers
+            )
+        )
         {
-            return hit.collider.transform == player;
+            bool canSee = hit.collider.transform == player;
+            Debug.Log($"[{gameObject.name}] CanShoot: {canSee} - Raycast hit: {hit.collider.name}");
+            return canSee;
         }
 
+        Debug.Log($"[{gameObject.name}] CanShoot: TRUE - Clear line of sight");
         return true;
     }
 
     private void ShootAtPlayer(Transform player)
     {
-        if (!canShoot || Time.time - lastShootTime < shootRate) return;
+        Debug.Log(
+            $"[{gameObject.name}] ShootAtPlayer called - canShoot: {canShoot}, timeSinceLastShot: {Time.time - lastShootTime:F2}"
+        );
+
+        if (!canShoot || Time.time - lastShootTime < shootRate)
+        {
+            Debug.Log($"[{gameObject.name}] Cannot shoot - rate limit");
+            return;
+        }
+
+        if (gunTip == null)
+        {
+            Debug.LogError($"[{gameObject.name}] gunTip is NULL!");
+            return;
+        }
+
+        if (bulletPool == null)
+        {
+            Debug.LogError($"[{gameObject.name}] bulletPool is NULL!");
+            return;
+        }
 
         GameObject bullet = bulletPool.GetObject();
-        if (bullet == null) return;
+
+        if (bullet == null)
+        {
+            Debug.LogWarning($"[{gameObject.name}] No bullet available from pool");
+            return;
+        }
 
         if (!bullet.TryGetComponent<Rigidbody>(out Rigidbody rb))
         {
+            Debug.LogError($"[{gameObject.name}] Bullet has no Rigidbody!");
             if (bullet.TryGetComponent<IPooledObject>(out var pooledObject))
                 pooledObject.ReturnToPoll();
             return;
@@ -670,7 +720,8 @@ public class EnemyAI : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        Vector3 targetPosition = player.position + Vector3.up * 1.5f;
+        // Vector3 targetPosition = player.position + Vector3.up * 1.5f;
+        Vector3 targetPosition = aimTarget.position;
         Vector3 direction = (targetPosition - gunTip.position).normalized;
 
         rb.linearVelocity = direction * bulletSpeed;
@@ -678,11 +729,49 @@ public class EnemyAI : MonoBehaviour
         lastShootTime = Time.time;
         canShoot = false;
         Invoke(nameof(ResetCanShoot), shootRate);
+
+        Debug.Log(
+            $"[{gameObject.name}] BULLET FIRED! Speed: {bulletSpeed}, Direction: {direction}"
+        );
     }
 
     private void ResetCanShoot()
     {
         canShoot = true;
+    }
+
+    private Vector3 FindShootingPosition(Vector3 playerPosition)
+    {
+        float searchRadius = 8f;
+        int attempts = 8;
+
+        for (int i = 0; i < attempts; i++)
+        {
+            float angle = (360f / attempts) * i;
+            Vector3 direction = Quaternion.Euler(0, angle, 0) * Vector3.forward;
+            Vector3 testPosition = transform.position + direction * searchRadius;
+
+            if (NavMesh.SamplePosition(testPosition, out NavMeshHit hit, 3f, Agent.areaMask))
+            {
+                Vector3 directionToPlayer = (playerPosition - hit.position).normalized;
+                float distanceToPlayer = Vector3.Distance(hit.position, playerPosition);
+
+                if (
+                    distanceToPlayer <= shootingRange
+                    && !Physics.Raycast(
+                        hit.position + Vector3.up * 1.5f,
+                        directionToPlayer,
+                        distanceToPlayer,
+                        shootingLayers
+                    )
+                )
+                {
+                    return hit.position;
+                }
+            }
+        }
+
+        return Vector3.zero;
     }
 
     private NodeStatus StealthAttack(Transform player)
@@ -748,14 +837,40 @@ public class EnemyAI : MonoBehaviour
             }
             else
             {
-                if (distanceToPlayer <= 2f)
+                // Fase final: atacar o jogador
+                if (CanShootAtPlayer(player))
                 {
+                    // CONSEGUE VER O JOGADOR - PARA E ATIRA
+                    Agent.isStopped = true;
+
+                    Vector3 directionToPlayer = (player.position - transform.position).normalized;
+                    Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+                    transform.rotation = Quaternion.Slerp(
+                        transform.rotation,
+                        lookRotation,
+                        Time.deltaTime * 8f
+                    );
+
+                    aimTarget.position = player.position + Vector3.up * 1.5f;
+
+                    ShootAtPlayer(player);
+                    Debug.Log($"[{gameObject.name}] STEALTH: Can see player - SHOOTING!");
+                }
+                else if (distanceToPlayer <= 2f)
+                {
+                    // Muito perto, termina stealth attack
+                    Debug.Log($"[{gameObject.name}] STEALTH: Too close, ending stealth attack");
                     yield break;
                 }
-
-                if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
+                else
                 {
-                    Agent.SetDestination(player.position);
+                    // NÃO CONSEGUE VER - CONTINUA A APROXIMAR-SE
+                    Agent.isStopped = false;
+                    if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
+                    {
+                        Agent.SetDestination(player.position);
+                    }
+                    Debug.Log($"[{gameObject.name}] STEALTH: Cannot see player - APPROACHING");
                 }
             }
 
@@ -774,21 +889,37 @@ public class EnemyAI : MonoBehaviour
                 StopCoroutine(MovementCoroutine);
 
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+            bool canSeePlayer = CanShootAtPlayer(player);
 
-            if (distanceToPlayer <= shootingRange && CanShootAtPlayer(player))
+            Debug.Log(
+                $"[{gameObject.name}] BruteAttack - Distance: {distanceToPlayer:F1}, CanSee: {canSeePlayer}, Range: {shootingRange}"
+            );
+
+            if (canSeePlayer)
             {
+                // CONSEGUE VER O JOGADOR - PARA E ATIRA
                 Agent.isStopped = true;
 
+                // Roda para o jogador
                 Vector3 directionToPlayer = (player.position - transform.position).normalized;
                 Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
-                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    lookRotation,
+                    Time.deltaTime * 8f
+                );
+
+                aimTarget.position = player.position + Vector3.up * 1.5f;
 
                 ShootAtPlayer(player);
+                Debug.Log($"[{gameObject.name}] Can see player - SHOOTING!");
             }
             else
             {
+                // NÃO CONSEGUE VER O JOGADOR - APROXIMA-SE
                 Agent.isStopped = false;
                 Agent.SetDestination(player.position);
+                Debug.Log($"[{gameObject.name}] Cannot see player - APPROACHING");
             }
 
             yield return wait;
