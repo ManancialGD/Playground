@@ -92,6 +92,8 @@ namespace DevConsole
                 {
                     if (input == "0") return false;
                     else if (input == "1") return true;
+                    else if (input == "on") return true;
+                    else if (input == "off") return false;
                     else return bool.Parse(input.ToLower());
                 }
 

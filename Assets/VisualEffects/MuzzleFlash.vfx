@@ -4375,9 +4375,7 @@ MonoBehaviour:
   m_Label: Spawn system
   m_Data: {fileID: 114350483966675822}
   m_InputFlowSlot:
-  - link:
-    - context: {fileID: 114350483966676525}
-      slotIndex: 0
+  - link: []
   - link: []
   m_OutputFlowSlot:
   - link:
@@ -9819,8 +9817,6 @@ MonoBehaviour:
     - context: {fileID: 114350483966676348}
       slotIndex: 0
     - context: {fileID: 114350483966676419}
-      slotIndex: 0
-    - context: {fileID: 114350483966675817}
       slotIndex: 0
   loopDuration: 0
   loopCount: 0

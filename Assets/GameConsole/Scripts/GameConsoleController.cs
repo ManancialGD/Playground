@@ -9,6 +9,7 @@ using UnityEngine.Rendering;
 using System.Linq;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
+using System.Reflection;
 
 namespace DevConsole
 {
@@ -134,7 +135,16 @@ namespace DevConsole
                             new("scene_name", typeof(string))
                         }
                     )
-                }
+                },
+                {
+                    "god_mode", new CommandDefinition(GodMode,
+                        help: "Enables or disables God Mode for the player.\n" +
+                            "Usage: god_mode <true/false>\n",
+                        arguments: new CommandArgument[]
+                        {
+                            new("enable", typeof(bool), defaultValue: null)
+                        })
+                },
             };
 
             // Check if references are properly assigned.
@@ -456,6 +466,58 @@ namespace DevConsole
             {
                 playerSettings.InvertMouseY = !playerSettings.InvertMouseY;
                 Log($"Invert Mouse Y set to {playerSettings.InvertMouseY}");
+            }
+        }
+
+        private void GodMode(params object[] args)
+        {
+            if (args == null || args.Length == 0)
+            {
+                Log("Please provide a boolean value to enable or disable God Mode.");
+                return;
+            }
+            if (args[0] is bool enable)
+            {
+                var player = FindAnyObjectByType<CustomCharacterController>();
+
+                if (player == null)
+                {
+                    Log("Player not found.");
+                    return;
+                }
+
+                HealthModule healthModule = player.GetComponent<HealthModule>();
+
+                if (healthModule != null)
+                {
+                    if (enable)
+                    {
+                        FieldInfo fieldInfo = healthModule
+                            .GetType()
+                            .GetField("currentHealth", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                        if (fieldInfo != null)
+                        {
+                            fieldInfo.SetValue(healthModule, int.MaxValue);
+                            Log("God Mode enabled.");
+                        }
+                    }
+                    else
+                    {
+                        FieldInfo fieldInfo = healthModule
+                            .GetType()
+                            .GetField("currentHealth", BindingFlags.NonPublic | BindingFlags.Instance);
+                        if (fieldInfo != null)
+                        {
+                            fieldInfo.SetValue(healthModule, 100);
+                            Log("God Mode disable.");
+                        }
+                    }
+                }
+                else
+                {
+                    Log("HealthModule not found on the player.");
+                }
             }
         }
 
