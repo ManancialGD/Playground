@@ -13,6 +13,7 @@ namespace CharacterController
 
         [SerializeField]
         private float radius = 1.0f;
+
         [SerializeField]
         private float interactDistance = 2.25f;
 
@@ -42,6 +43,7 @@ namespace CharacterController
         {
             Interact();
         }
+
         private void OnGUI()
         {
             var labelWidth = 400;
@@ -57,10 +59,18 @@ namespace CharacterController
                 alignment = TextAnchor.MiddleCenter,
                 fontSize = 22,
                 fontStyle = FontStyle.Bold,
-                normal = { textColor = new(.75f, .75f, .75f) }
+                normal = { textColor = new(.75f, .75f, .75f) },
             };
 
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, interactDistance, interactablesLayer))
+            if (
+                Physics.Raycast(
+                    cameraTransform.position,
+                    cameraTransform.forward,
+                    out RaycastHit hit,
+                    interactDistance,
+                    interactablesLayer
+                )
+            )
             {
                 if (hit.collider.TryGetComponent<Interactable>(out var interactable))
                 {
@@ -69,7 +79,13 @@ namespace CharacterController
                 }
             }
 
-            RaycastHit[] hits = Physics.SphereCastAll(transform.position, radius, cameraTransform.forward, 0f, interactablesLayer);
+            RaycastHit[] hits = Physics.SphereCastAll(
+                transform.position,
+                radius,
+                cameraTransform.forward,
+                0f,
+                interactablesLayer
+            );
 
             if (hits.Length > 0)
             {
@@ -90,7 +106,15 @@ namespace CharacterController
 
         public void Interact()
         {
-            if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, interactDistance, interactablesLayer))
+            if (
+                Physics.Raycast(
+                    cameraTransform.position,
+                    cameraTransform.forward,
+                    out RaycastHit hit,
+                    interactDistance,
+                    interactablesLayer
+                )
+            )
             {
                 if (hit.collider.TryGetComponent<Interactable>(out var interactable))
                 {
@@ -99,7 +123,13 @@ namespace CharacterController
                 }
             }
 
-            RaycastHit[] hits = Physics.SphereCastAll(transform.position, radius, cameraTransform.forward, 0f, interactablesLayer);
+            RaycastHit[] hits = Physics.SphereCastAll(
+                transform.position,
+                radius,
+                cameraTransform.forward,
+                0f,
+                interactablesLayer
+            );
 
             if (hits.Length > 0)
             {
