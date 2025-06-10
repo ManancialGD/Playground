@@ -220,13 +220,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 026aab14bb223be41a8943685127e753, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Speed: 1
   ReportName: Playground_Def_0
   WorldLayer:
     serializedVersion: 2
     m_Bits: 8
   ForceState: 2
   Player: {fileID: 0}
+  defendPoint: {fileID: 0}
+  defendRadius: 15
+  stealthDistance: 4
+  stealthRecalculateInterval: 3
+  gunTip: {fileID: 6363993350572204210}
+  bulletPool: {fileID: 0}
+  shootRate: 0.5
+  bulletSpeed: 200
+  shootingRange: 15
+  shootingLayers:
+    serializedVersion: 2
+    m_Bits: 512
   LineOfSightChecker: {fileID: 2173736021544206797}
   Agent: {fileID: 0}
   HideSensitivity: 0.29
