@@ -2432,7 +2432,7 @@ MonoBehaviour:
   clearDepth: 1
   volumeLayerMask:
     serializedVersion: 2
-    m_Bits: 2
+    m_Bits: 1026
   volumeAnchorOverride: {fileID: 0}
   antialiasing: 3
   SMAAQuality: 2
@@ -8510,7 +8510,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2043674755}
   - component: {fileID: 2043674754}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Global Volume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
