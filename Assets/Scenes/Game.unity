@@ -332,7 +332,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scriptsToToggle:
   - {fileID: 7334488957384146387}
-  - {fileID: 0}
+  - {fileID: 1025104373}
   roomID: 6
 --- !u!1001 &122921949
 PrefabInstance:
@@ -635,7 +635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c9947bcfd316334c9492e244f9cf475, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EntityAI: {fileID: 0}
+  EntityAI: {fileID: 2072403317}
   simulationControl: {fileID: 1961266793}
 --- !u!114 &131146331
 MonoBehaviour:
@@ -1986,7 +1986,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2e4cea60e01a5c4bb9fad8d1304ef03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enableLearning: 1
+  enableLearning: 0
   SimulationSpeed: 1
   TrainingEntity: {fileID: 7334488957384146387}
   LearnerAI: {fileID: 682466365}
@@ -2693,6 +2693,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ReportName
+      value: Playground_Def_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: bulletPool
       value: 
       objectReference: {fileID: 1902969272}
@@ -3119,6 +3123,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3493022350622677319, guid: ad743358dab18814689e631459297000, type: 3}
   m_PrefabInstance: {fileID: 122921949}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1025104373 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+  m_PrefabInstance: {fileID: 862228965}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 026aab14bb223be41a8943685127e753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1063558264
 GameObject:
   m_ObjectHideFlags: 0
@@ -3312,6 +3327,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ReportName
+      value: Playground_Def_5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: bulletPool
       value: 
       objectReference: {fileID: 1902969272}
@@ -3341,7 +3360,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -40.19
+      value: -40.239998
       objectReference: {fileID: 0}
     - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4257,6 +4276,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   simulationControl: {fileID: 1961266793}
+--- !u!114 &1246700956 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+  m_PrefabInstance: {fileID: 1118633856}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 026aab14bb223be41a8943685127e753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1256071075
 GameObject:
   m_ObjectHideFlags: 0
@@ -4964,6 +4994,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ReportName
+      value: Playground_Def_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: bulletPool
       value: 
       objectReference: {fileID: 1902969272}
@@ -4993,7 +5027,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -40.19
+      value: -40.239998
       objectReference: {fileID: 0}
     - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5037,6 +5071,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
   m_PrefabInstance: {fileID: 1337654574}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1337654577 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+  m_PrefabInstance: {fileID: 1337654574}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 026aab14bb223be41a8943685127e753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1339309326
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7621,6 +7666,7 @@ Transform:
   - {fileID: 1740774612}
   - {fileID: 131146329}
   - {fileID: 880445010}
+  - {fileID: 2072403318}
   - {fileID: 1118633857}
   - {fileID: 1337654575}
   - {fileID: 1778285873}
@@ -7639,9 +7685,139 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scriptsToToggle:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 1246700956}
+  - {fileID: 1337654577}
+  - {fileID: 2072403317}
   roomID: 8
+--- !u!1001 &1709719730
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1706230252}
+    m_Modifications:
+    - target: {fileID: 122847923074086367, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_Name
+      value: GameDealer (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 122847923074086367, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2478046567385500659, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: Player
+      value: 
+      objectReference: {fileID: 133209704}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: audioPool
+      value: 
+      objectReference: {fileID: 1063558266}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ForceState
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ReportName
+      value: Playground_Def_6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: bulletPool
+      value: 
+      objectReference: {fileID: 1902969272}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: bulletSpeed
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: defendPoint
+      value: 
+      objectReference: {fileID: 1778285873}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: HidingLearner
+      value: 
+      objectReference: {fileID: 2049679512}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_D_Importance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_AD_Importance
+      value: 0.912
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_EX_Importance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_MH_Importance
+      value: 0.906
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_OD_Importance
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: AI_Dot_Importance
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: simulationControl
+      value: 
+      objectReference: {fileID: 1961266793}
+    - target: {fileID: 4073263397619118202, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8c13e4fbe7bc58746b155cece49e841d, type: 2}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.29000092
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -40.22762
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.9870377
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
 --- !u!1 &1714662103
 GameObject:
   m_ObjectHideFlags: 0
@@ -7768,7 +7944,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93e8334c4f9a539418ffb164e943cf0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fileName: Playground_AI_Room2_Test1
+  fileName: Playground_AI_Room2_Test2
   simulationControl: {fileID: 1961266793}
   scoresLearner: {fileID: 2049679512}
 --- !u!4 &1740774612
@@ -8477,7 +8653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableLearning: 1
   SimulationSpeed: 1
-  TrainingEntity: {fileID: 0}
+  TrainingEntity: {fileID: 2072403317}
   LearnerAI: {fileID: 2049679512}
   MapMaxDistance: 40
   scoresFileSystem: {fileID: 1740774611}
@@ -8595,6 +8771,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1706230252}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2072403317 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+  m_PrefabInstance: {fileID: 1709719730}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 026aab14bb223be41a8943685127e753, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2072403318 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5963254534776147555, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+  m_PrefabInstance: {fileID: 1709719730}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2123707606 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 7238888113841872722, guid: 462b94f6adb49d1438573a988914533e, type: 3}
@@ -26484,6 +26676,10 @@ PrefabInstance:
     - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: ForceState
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
+      propertyPath: ReportName
+      value: Playground_Def_3
       objectReference: {fileID: 0}
     - target: {fileID: 3039007652263401643, guid: a5bd70a2df21a194997c0d5a65a32592, type: 3}
       propertyPath: bulletPool
