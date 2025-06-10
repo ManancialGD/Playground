@@ -3432,7 +3432,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEditor.VFX.TArcSphere, Unity.VisualEffectGraph.Editor,
           Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"sphere":{"transform":{"position":{"x":-0.000555184728000313,"y":-2.5081396515247435e-8,"z":0.039939165115356448},"angles":{"x":0.0,"y":0.0,"z":0.0},"scale":{"x":1.0,"y":1.0,"z":1.0}},"radius":0.14414159953594209},"arc":6.2831854820251469}'
+      m_SerializableObject: '{"sphere":{"transform":{"position":{"x":-0.000555184728000313,"y":-2.5081396515247435e-8,"z":0.039939165115356448},"angles":{"x":0.0,"y":0.0,"z":0.0},"scale":{"x":0.5,"y":0.5,"z":0.5}},"radius":0.14414159953594209},"arc":6.2831854820251469}'
     m_Space: 0
   m_Property:
     name: arcSphere
@@ -9899,7 +9899,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 64
+      m_SerializableObject: 32
     m_Space: -1
   m_Property:
     name: Count

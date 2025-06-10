@@ -6,6 +6,10 @@ using DataSpace;
 using DecisionTreeAI;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Audio;
+using UnityEngine.VFX;
+
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyAI : MonoBehaviour
@@ -51,10 +55,16 @@ public class EnemyAI : MonoBehaviour
     [SerializeField]
     private LayerMask shootingLayers;
 
+    [SerializeField]
+    AudioClip[] shootSounds;
     public EnemyLineOfSightChecker LineOfSightChecker;
 
     [HideInInspector]
     public NavMeshAgent Agent;
+
+    [SerializeField]
+    private Transform viewPoint;
+
     NavMeshPath Path;
 
     public bool BeingSeen { get; private set; } = false;
@@ -140,28 +150,52 @@ public class EnemyAI : MonoBehaviour
     [SerializeField]
     SimulationControl simulationControl;
 
+    [SerializeField]
+    private HealthModule healthModule;
+
+    [SerializeField]
+    private VisualEffect muzzleEffect;
+
+    [SerializeField]
+    private Animator anim;
+    [SerializeField]
+    private ObjectPool audioPool;
+
+    [SerializeField]
+    private AudioMixerGroup shotsAudioMixerGroup;
+
     public ScoresDatabase HidingScores { get; private set; }
 
     private void Start()
     {
         Agent = GetComponent<NavMeshAgent>();
+
+        if (anim == null)
+            anim = GetComponentInChildren<Animator>();
+
         originalAgentSpeed = Agent.speed;
+
+        if (healthModule == null)
+            healthModule = GetComponent<HealthModule>();
+
+        if (healthModule != null)
+            healthModule.Died += OnDead;
 
         if (Player == null)
         {
-            Debug.LogError("EnemyAI.Player is not assigned in the inspector!");
+            // Debug.LogError("EnemyAI.Player is not assigned in the inspector!");
             enabled = false;
             return;
         }
         if (LineOfSightChecker == null)
         {
-            Debug.LogError("EnemyAI.LineOfSightChecker is not assigned in the inspector!");
+            // Debug.LogError("EnemyAI.LineOfSightChecker is not assigned in the inspector!");
             enabled = false;
             return;
         }
         if (simulationControl == null)
         {
-            Debug.LogError("EnemyAI.simulationControl is not assigned in the inspector!");
+            // Debug.LogError("EnemyAI.simulationControl is not assigned in the inspector!");
             enabled = false;
             return;
         }
@@ -197,6 +231,15 @@ public class EnemyAI : MonoBehaviour
         if (Time.timeScale != simulationControl.SimulationSpeed)
             Time.timeScale = simulationControl.SimulationSpeed;
         UpdateAI();
+    }
+
+    private void Update()
+    {
+        float forwardValue = Vector3.Dot(Agent.velocity, viewPoint.forward);
+        float horizontalValue = Vector3.Dot(Agent.velocity, viewPoint.right);
+
+        anim.SetFloat("xInput", horizontalValue);
+        anim.SetFloat("yInput", forwardValue);
     }
 
     private void HandleGainSight(Transform Target)
@@ -258,9 +301,8 @@ public class EnemyAI : MonoBehaviour
                         return 1;
                     case EnemyState.Defense:
                         return 0;
-
                     default:
-                        Debug.LogError("Invalid EnemyState");
+                        // Debug.LogError("Invalid EnemyState");
                         break;
                 }
             }
@@ -321,9 +363,6 @@ public class EnemyAI : MonoBehaviour
             return BruteAttack(Player);
         });
 
-        // CORREÇÃO: A árvore estava mal estruturada!
-        // Quando AttackOrDefense retorna 0 → vai para defenseNode (índice 0)
-        // Quando AttackOrDefense retorna 1 → vai para chooseAttack (índice 1)
         root.AddChild(defenseNode); // índice 0 - DEFENSE
         root.AddChild(chooseAttack); // índice 1 - ATTACK
         chooseAttack.AddChild(stealthAttackNode).AddChild(bruteAttackNode);
@@ -394,7 +433,7 @@ public class EnemyAI : MonoBehaviour
         float distance = Vector3.Distance(pos1, pos2);
         Vector3 dir = (pos2 - pos1).normalized; // Agora aponta na direção correta
 
-        if (Physics.Raycast(pos1, dir, out RaycastHit hit, distance, WorldLayer))
+        if (Physics.Raycast(pos1, dir, out RaycastHit hit, distance, WorldLayer | shootingLayers))
         {
             return hit.collider.CompareTag("EnemyAI") && hit.collider.gameObject != gameObject;
         }
@@ -638,51 +677,47 @@ public class EnemyAI : MonoBehaviour
 
     private bool CanShootAtPlayer(Transform player)
     {
-        if (gunTip == null || bulletPool == null)
+        if (viewPoint == null || bulletPool == null)
         {
-            Debug.Log($"[{gameObject.name}] CanShoot: FALSE - gunTip or bulletPool is NULL");
             return false;
         }
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         if (distanceToPlayer > shootingRange)
         {
-            Debug.Log(
-                $"[{gameObject.name}] CanShoot: FALSE - Too far ({distanceToPlayer:F1} > {shootingRange})"
-            );
             return false;
         }
 
-        Vector3 directionToPlayer = (player.position - gunTip.position).normalized;
+        Vector3 directionToPlayer = (player.position - viewPoint.position).normalized;
+        LayerMask layer = shootingLayers | WorldLayer;
 
         if (
             Physics.Raycast(
-                gunTip.position,
+                viewPoint.position,
                 directionToPlayer,
                 out RaycastHit hit,
                 distanceToPlayer,
-                shootingLayers
+                layer
             )
         )
         {
-            bool canSee = hit.collider.transform == player;
-            Debug.Log($"[{gameObject.name}] CanShoot: {canSee} - Raycast hit: {hit.collider.name}");
+            bool canSee = hit.collider.GetComponentInParent<CustomCharacterController>() != null;
+
             return canSee;
         }
 
-        Debug.Log($"[{gameObject.name}] CanShoot: TRUE - Clear line of sight");
         return true;
     }
 
     private void ShootAtPlayer(Transform player)
     {
-        Debug.Log(
-            $"[{gameObject.name}] ShootAtPlayer called - canShoot: {canShoot}, timeSinceLastShot: {Time.time - lastShootTime:F2}"
-        );
+        // Debug.Log(
+        //     $"[{gameObject.name}] ShootAtPlayer called - canShoot: {canShoot}, timeSinceLastShot: {Time.time - lastShootTime:F2}"
+        // );
 
         if (!canShoot || Time.time - lastShootTime < shootRate)
         {
-            Debug.Log($"[{gameObject.name}] Cannot shoot - rate limit");
+            // Debug.Log($"[{gameObject.name}] Cannot shoot - rate limit");
             return;
         }
 
@@ -714,25 +749,46 @@ public class EnemyAI : MonoBehaviour
             return;
         }
 
+        if (bullet.TryGetComponent<BulletProjectile>(out var bulletProjectile))
+            bulletProjectile.isPlayers = false;
+
         bullet.transform.position = gunTip.position;
         bullet.transform.parent = null;
 
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        // Vector3 targetPosition = player.position + Vector3.up * 1.5f;
         Vector3 targetPosition = aimTarget.position;
         Vector3 direction = (targetPosition - gunTip.position).normalized;
 
+        float offsetMagnitude = Random.Range(0, 0.05f);
+        Vector3 randomOffset = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
+
+        direction += randomOffset * offsetMagnitude;
+
         rb.linearVelocity = direction * bulletSpeed;
+
+        muzzleEffect?.Play();
+
+        GameObject audioObject = audioPool.GetObject();
+        if (audioObject.TryGetComponent<AudioSource>(out var audioSource))
+        {
+            audioObject.transform.position = gunTip.position;
+            audioObject.transform.SetParent(gunTip, true);
+            audioSource.outputAudioMixerGroup = shotsAudioMixerGroup;
+            audioSource.clip = shootSounds[Random.Range(0, shootSounds.Length)];
+            // audioSource.pitch = RandomPitch(.9f, 1.1f); // this shouldn't be necessary, the sounds itself should have differentiations
+            audioSource.maxDistance = 50;
+            audioSource.Play();
+        }
 
         lastShootTime = Time.time;
         canShoot = false;
         Invoke(nameof(ResetCanShoot), shootRate);
 
-        Debug.Log(
-            $"[{gameObject.name}] BULLET FIRED! Speed: {bulletSpeed}, Direction: {direction}"
-        );
+        // Debug.Log(
+        //     $"[{gameObject.name}] BULLET FIRED! Speed: {bulletSpeed}, Direction: {direction}"
+        // );
     }
 
     private void ResetCanShoot()
@@ -822,7 +878,30 @@ public class EnemyAI : MonoBehaviour
             float distanceToTarget = Vector3.Distance(transform.position, currentStealthTarget);
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-            if (!hasReachedStealthPosition && distanceToTarget <= 3f)
+            // Debug.Log($"[{gameObject.name}] STEALTH: distanceToTarget={distanceToTarget:F2}, distanceToPlayer={distanceToPlayer:F2}, canShoot={CanShootAtPlayer(player)}");
+
+            if (CanShootAtPlayer(player))
+            {
+                // Debug.Log("[" + gameObject.name + "] STEALTH: Can see player - stopping and shooting");
+                // CONSEGUE VER O JOGADOR - PARA E ATIRA
+                Agent.isStopped = true;
+                Agent.ResetPath();
+
+                Vector3 directionToPlayer = (player.position - transform.position).normalized;
+                Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    lookRotation,
+                    Time.deltaTime * 8f
+                );
+
+
+                aimTarget.position = player.position + Vector3.up * .15f;
+
+                ShootAtPlayer(player);
+                // Debug.Log($"[{gameObject.name}] STEALTH: Can see player - SHOOTING!");
+            }
+            else if (!hasReachedStealthPosition && distanceToTarget <= 3f)
             {
                 hasReachedStealthPosition = true;
                 Agent.SetDestination(player.position);
@@ -835,44 +914,23 @@ public class EnemyAI : MonoBehaviour
                     Agent.SetDestination(currentStealthTarget);
                 }
             }
+            else if (distanceToPlayer <= 2f)
+            {
+                // Muito perto, termina stealth attack
+                // Debug.Log($"[{gameObject.name}] STEALTH: Too close, ending stealth attack");
+                yield break;
+            }
             else
             {
-                // Fase final: atacar o jogador
-                if (CanShootAtPlayer(player))
+                // NÃO CONSEGUE VER - CONTINUA A APROXIMAR-SE
+                Agent.isStopped = false;
+                if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
                 {
-                    // CONSEGUE VER O JOGADOR - PARA E ATIRA
-                    Agent.isStopped = true;
-
-                    Vector3 directionToPlayer = (player.position - transform.position).normalized;
-                    Quaternion lookRotation = Quaternion.LookRotation(directionToPlayer);
-                    transform.rotation = Quaternion.Slerp(
-                        transform.rotation,
-                        lookRotation,
-                        Time.deltaTime * 8f
-                    );
-
-                    aimTarget.position = player.position + Vector3.up * 1.5f;
-
-                    ShootAtPlayer(player);
-                    Debug.Log($"[{gameObject.name}] STEALTH: Can see player - SHOOTING!");
+                    Agent.SetDestination(player.position);
                 }
-                else if (distanceToPlayer <= 2f)
-                {
-                    // Muito perto, termina stealth attack
-                    Debug.Log($"[{gameObject.name}] STEALTH: Too close, ending stealth attack");
-                    yield break;
-                }
-                else
-                {
-                    // NÃO CONSEGUE VER - CONTINUA A APROXIMAR-SE
-                    Agent.isStopped = false;
-                    if (!Agent.hasPath || Agent.remainingDistance < 0.5f)
-                    {
-                        Agent.SetDestination(player.position);
-                    }
-                    Debug.Log($"[{gameObject.name}] STEALTH: Cannot see player - APPROACHING");
-                }
+                // Debug.Log($"[{gameObject.name}] STEALTH: Cannot see player - APPROACHING");
             }
+
 
             yield return wait;
         }
@@ -891,9 +949,9 @@ public class EnemyAI : MonoBehaviour
             float distanceToPlayer = Vector3.Distance(transform.position, player.position);
             bool canSeePlayer = CanShootAtPlayer(player);
 
-            Debug.Log(
-                $"[{gameObject.name}] BruteAttack - Distance: {distanceToPlayer:F1}, CanSee: {canSeePlayer}, Range: {shootingRange}"
-            );
+            // Debug.Log(
+            //     $"[{gameObject.name}] BruteAttack - Distance: {distanceToPlayer:F1}, CanSee: {canSeePlayer}, Range: {shootingRange}"
+            // );
 
             if (canSeePlayer)
             {
@@ -909,17 +967,17 @@ public class EnemyAI : MonoBehaviour
                     Time.deltaTime * 8f
                 );
 
-                aimTarget.position = player.position + Vector3.up * 1.5f;
+                aimTarget.position = player.position + Vector3.up * .15f;
 
                 ShootAtPlayer(player);
-                Debug.Log($"[{gameObject.name}] Can see player - SHOOTING!");
+                // Debug.Log($"[{gameObject.name}] Can see player - SHOOTING!");
             }
             else
             {
                 // NÃO CONSEGUE VER O JOGADOR - APROXIMA-SE
                 Agent.isStopped = false;
                 Agent.SetDestination(player.position);
-                Debug.Log($"[{gameObject.name}] Cannot see player - APPROACHING");
+                // Debug.Log($"[{gameObject.name}] Cannot see player - APPROACHING");
             }
 
             yield return wait;
@@ -956,5 +1014,21 @@ public class EnemyAI : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(Player.position - (Player.forward * stealthDistance), 0.5f);
         }
+    }
+
+    private void OnValidate()
+    {
+        if (healthModule == null)
+        {
+            healthModule = GetComponent<HealthModule>();
+        }
+    }
+
+    private void OnDead()
+    {
+        healthModule.Died -= OnDead;
+
+        StopAllCoroutines();
+        enabled = false;
     }
 }

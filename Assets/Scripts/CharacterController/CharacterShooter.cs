@@ -24,6 +24,7 @@ public class CharacterShooter : MonoBehaviour
     [SerializeField] private LayerMask environmentLayer;
     [SerializeField] private ObjectPool bulletPool;
     [SerializeField] private VisualEffect muzzleFlash;
+    private HealthModule healthModule;
 
     [SerializeField] private BulletProjectile bulletPrefab;
 
@@ -38,12 +39,14 @@ public class CharacterShooter : MonoBehaviour
             cam = FindAnyObjectByType<CinemachineBrain>().transform;
         if (characterController == null)
             characterController = GetComponent<CustomCharacterController>();
+        if (healthModule == null)
+            healthModule = GetComponent<HealthModule>();
     }
 
     public void UpdateAim()
     {
         LayerMask layer = enemiesLayer | environmentLayer;
-        
+
         if (Physics.Raycast(cam.position + cam.forward * cameraSafeDistance, cam.forward, out RaycastHit hit, maxDistance, layer))
         {
             if (hit.collider.gameObject.layer == playerLayer || hit.collider.GetComponent<BulletProjectile>() != null) return;
@@ -72,6 +75,8 @@ public class CharacterShooter : MonoBehaviour
 
     private void OnShootActionPerformed(InputAction.CallbackContext context)
     {
+        if (healthModule?.IsDead == true)
+            return;
         if (characterController?.CharacterState == CharacterStates.Console) return;
 
         shootCoroutine = StartCoroutine(ShootCoroutine());
@@ -111,6 +116,9 @@ public class CharacterShooter : MonoBehaviour
         bullet.transform.position = gunTip.position;
         bullet.transform.parent = null;
 
+        if (bullet.TryGetComponent<BulletProjectile>(out var bulletProjectile))
+            bulletProjectile.isPlayers = true;
+            
         if (rb)
         {
             rb.linearVelocity = Vector3.zero;

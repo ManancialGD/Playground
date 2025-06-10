@@ -49,7 +49,7 @@ public class RoomManager : MonoBehaviour
         if (SceneManager.GetActiveScene().name == menuSceneName && continueButton != null)
         {
             int i = PlayerPrefs.GetInt("StartID", 0);
-            Debug.Log("[RoomManager] StartID from PlayerPrefs: " + i);
+            // Debug.Log("[RoomManager] StartID from PlayerPrefs: " + i);
 
             if (i == 0)
                 continueButton.gameObject.SetActive(false);
@@ -57,12 +57,12 @@ public class RoomManager : MonoBehaviour
                 continueButton.gameObject.SetActive(true);
         }
 
-        Debug.Log(
-            "[RoomManager] Active scene:  {SceneManager.GetActiveScene().name}, Game Scene {gameSceneName}"
-        );
+        // Debug.Log(
+        //     "[RoomManager] Active scene:  {SceneManager.GetActiveScene().name}, Game Scene {gameSceneName}"
+        // );
         if (SceneManager.GetActiveScene().name != gameSceneName)
         {
-            Debug.Log("[RoomManager] Not in game scene, skipping initialization.");
+            // Debug.Log("[RoomManager] Not in game scene, skipping initialization.");
             return;
         }
 
@@ -74,7 +74,7 @@ public class RoomManager : MonoBehaviour
             .FirstOrDefault(l => l.ThisLimbType == LimbType.Head)
             ?.transform;
 
-        Debug.Log("[RoomManager] Initializing rooms...");
+        // Debug.Log("[RoomManager] Initializing rooms...");
         rooms = FindObjectsByType<Room>(FindObjectsSortMode.None);
 
         currentRoomID = startAtID;
@@ -96,7 +96,7 @@ public class RoomManager : MonoBehaviour
 
         if (spawnRoom == null)
         {
-            Debug.LogError("[RoomManager] No valid start room with a SpawnPosition found!");
+            // Debug.LogError("[RoomManager] No valid start room with a SpawnPosition found!");
         }
 
         foreach (Room room in rooms)
@@ -106,7 +106,7 @@ public class RoomManager : MonoBehaviour
 
             if (room.ID == spawnRoomID)
             {
-                Debug.Log($"[RoomManager] Activating start room with ID {spawnRoomID}");
+                // Debug.Log($"[RoomManager] Activating start room with ID {spawnRoomID}");
                 room.gameObject.SetActive(true);
                 currentRoom = room;
                 currentRoomID = spawnRoomID;
@@ -114,39 +114,39 @@ public class RoomManager : MonoBehaviour
             }
             else if (room.ID < spawnRoomID)
             {
-                Debug.Log($"[RoomManager] Destroying room with ID {room.ID} (before start)");
+                // Debug.Log($"[RoomManager] Destroying room with ID {room.ID} (before start)");
                 Destroy(room.gameObject);
             }
             else
             {
-                Debug.Log($"[RoomManager] Deactivating room with ID {room.ID}");
+                // Debug.Log($"[RoomManager] Deactivating room with ID {room.ID}");
                 room.gameObject.SetActive(false);
             }
         }
 
         foreach (Door door in FindObjectsByType<Door>(FindObjectsSortMode.None))
         {
-            Debug.Log($"[RoomManager] Subscribing to door in room {door.RoomID}");
+            // Debug.Log($"[RoomManager] Subscribing to door in room {door.RoomID}");
             door.EnterRoom += OnEnterRoom;
         }
 
         if (character == null)
         {
-            Debug.Log("[RoomManager] Character not set, searching in scene...");
+            // Debug.Log("[RoomManager] Character not set, searching in scene...");
             character = FindAnyObjectByType<CustomCharacterController>();
         }
 
         if (character != null)
         {
-            Debug.Log(
-                $"[RoomManager] Placing character at spawn position of room {currentRoom.ID}"
-            );
+            // Debug.Log(
+            //     $"[RoomManager] Placing character at spawn position of room {currentRoom.ID}"
+            // );
             character.transform.position = currentRoom.SpawnPosition.position;
             character.transform.rotation = currentRoom.SpawnPosition.rotation;
         }
         else
         {
-            Debug.LogWarning("[RoomManager] Character controller not found!");
+            // Debug.LogWarning("[RoomManager] Character controller not found!");
         }
 
         OnRoomChanged?.Invoke(currentRoomID);
@@ -196,7 +196,7 @@ public class RoomManager : MonoBehaviour
             KillWithLaser();
         }
     }
-    
+
     public void KillWithLaser()
     {
         laser.gameObject.SetActive(true);
@@ -232,9 +232,8 @@ public class RoomManager : MonoBehaviour
 
     public bool TryOpenDoor(int roomID, bool isDeadRoom)
     {
-        Debug.Log(
-            $"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})"
-        );
+        Debug.Log($"[RoomManager] Trying to open door to room {roomID} (currentRoomID: {currentRoomID})");
+
         if (roomID == 100) return true;
         if (roomID <= currentRoomID)
         {
@@ -249,16 +248,16 @@ public class RoomManager : MonoBehaviour
         Debug.Log($"[RoomManager] Activating room {roomID}");
         room.gameObject.SetActive(true);
 
+        if (isDeadRoom)
+            return true;
+
         previusRoomID = currentRoomID;
 
         currentRoom = room;
         currentRoomID = roomID;
 
-        if (!isDeadRoom)
-        {
-            PlayerPrefs.SetInt("StartID", currentRoomID);
-            PlayerPrefs.Save();
-        }
+        PlayerPrefs.SetInt("StartID", currentRoomID);
+        PlayerPrefs.Save();
 
         timer = room.Time;
 

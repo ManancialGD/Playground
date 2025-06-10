@@ -252,7 +252,7 @@ MonoBehaviour:
       type: {class: LookDevVolumeProfileSettings, ns: UnityEngine.Rendering.HighDefinition, asm: Unity.RenderPipelines.HighDefinition.Runtime}
       data:
         m_Version: 0
-        m_VolumeProfile: {fileID: 11400000, guid: 4594f4a3fb14247e192bcca6dc23c8ed, type: 2}
+        m_VolumeProfile: {fileID: 11400000, guid: 4e826ed4f5889e94283cb29858bfd5e5, type: 2}
     - rid: 1490453099449417731
       type: {class: WaterSystemRuntimeResources, ns: UnityEngine.Rendering.HighDefinition, asm: Unity.RenderPipelines.HighDefinition.Runtime}
       data:

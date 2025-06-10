@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EnemyActivityManager : MonoBehaviour
@@ -10,8 +11,10 @@ public class EnemyActivityManager : MonoBehaviour
 
     private RoomManager roomManager;
 
-    private void Start()
+    private IEnumerator Start()
     {
+        yield return null;
+        
         roomManager = FindAnyObjectByType<RoomManager>();
         if (roomManager != null)
         {

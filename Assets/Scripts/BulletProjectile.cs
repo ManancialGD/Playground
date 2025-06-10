@@ -9,8 +9,10 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
 
     private Rigidbody rb;
     private ObjectPool thisObjectPool;
+    [HideInInspector] public bool isPlayers = false;
     private float elapsedTime = 0;
 
+    private bool damaged = false;
 
     private void Awake()
     {
@@ -27,11 +29,21 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision other)
     {
-        if (other.TryGetComponent(out RagDollLimb ragDollLimb))
+        if (damaged)
+            return;
+        
+        if (isPlayers && other.collider.GetComponentInParent<CustomCharacterController>())
+            return;
+
+        if (!isPlayers && other.collider.GetComponentInParent<EnemyAI>())
+            return;
+
+        if (other.collider.TryGetComponent(out RagDollLimb ragDollLimb))
         {
             ragDollLimb.Damage(transform.position, rb.linearVelocity.normalized);
+            damaged = true;
         }
         HandleDespawn();
     }
@@ -73,6 +85,7 @@ public class BulletProjectile : MonoBehaviour, IPooledObject
     {
         rb.WakeUp();
         rb.linearVelocity = Vector3.zero;
+        damaged = false;
 
         StartCoroutine(EnableTrail());
     }

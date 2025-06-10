@@ -1673,6 +1673,7 @@ GameObject:
   - component: {fileID: 7512388404220854862}
   - component: {fileID: 3471329188198148036}
   - component: {fileID: 2754738523577020656}
+  - component: {fileID: 4429106090797900235}
   m_Layer: 6
   m_Name: CharacterController
   m_TagString: Untagged
@@ -1815,10 +1816,10 @@ MonoBehaviour:
   characterShooter: {fileID: 3533329048225809820}
   shootAudioCollection:
     audioClips:
-    - {fileID: 8300000, guid: 057f6e907f30f014a941c78719ed70a7, type: 3}
-    - {fileID: 8300000, guid: 67212080bd3203a42bb83fdcb6a8a02e, type: 3}
-    - {fileID: 8300000, guid: 9e0289ff9626f7749ba56736d27a8a03, type: 3}
-    - {fileID: 8300000, guid: fcea1816fb561fb4989fb24409faa867, type: 3}
+    - {fileID: 8300000, guid: a95a4a2859dc15e40954e73fb80ad253, type: 3}
+    - {fileID: 8300000, guid: 1148585924c3cec49afe648f7df9fa88, type: 3}
+    - {fileID: 8300000, guid: af1f5a13ff518e64185c926b72df6610, type: 3}
+    - {fileID: 8300000, guid: 483c25ae66447be4497a7cf28ddcf6c9, type: 3}
   shotsAdioMixerGroup: {fileID: -460781356209849396, guid: 51b0d23097b2e1f43ae670fe4bbcd80c, type: 2}
 --- !u!114 &3345085265447689634
 MonoBehaviour:
@@ -1979,6 +1980,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxHealth: 100
   anim: {fileID: 7924078316815120333}
+--- !u!114 &4429106090797900235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1922662816668992015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b72c50eb69f1104a995355667300ca8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  overlayImage: {fileID: 0}
+  maxAlpha: 0.7
 --- !u!1 &1987554130932744445
 GameObject:
   m_ObjectHideFlags: 0
@@ -2432,8 +2447,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.31279853, y: 0.20863411, z: 0.2260473}
-  m_Center: {x: 0.00000010430813, y: 0.10431709, z: -0.005562514}
+  m_Size: {x: 0.31279853, y: 0.27683118, z: 0.22604829}
+  m_Center: {x: 0.000000104321444, y: 0.13841546, z: -0.0055625136}
 --- !u!54 &958159464342532804
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -10343,8 +10358,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Priority:
-    Enabled: 0
-    m_Value: 0
+    Enabled: 1
+    m_Value: 20
   OutputChannel: 1
   StandbyUpdate: 2
   m_StreamingVersion: 20241001

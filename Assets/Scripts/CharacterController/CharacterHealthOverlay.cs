@@ -15,13 +15,13 @@ public class CharacterHealthOverlay : MonoBehaviour
 
     private void Start()
     {
-        healthModule = FindFirstObjectByType<HealthModule>();
+        healthModule = GetComponent<HealthModule>();
 
         if (overlayImage == null)
-            overlayImage = GetComponent<Image>();
+            Debug.LogError("No overlay image");
 
         if (overlayImage != null)
-            overlayImage.color = new Color(1f, 0f, 0f, 0f);
+            overlayImage.color = new Color(1f, 1f, 1f, 0f);
     }
 
     private void Update()
@@ -46,6 +46,6 @@ public class CharacterHealthOverlay : MonoBehaviour
         float damagePercent = 1f - healthPercent;
         float alpha = damagePercent * maxAlpha;
 
-        overlayImage.color = new Color(1f, 0f, 0f, alpha);
+        overlayImage.color = new Color(1f, 1f, 1f, alpha);
     }
 }

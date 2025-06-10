@@ -291,7 +291,7 @@ namespace DevConsole
                 {
                     if (globalVolume.profile.TryGet(out IndirectLightingController indirectLightingController))
                     {
-                        indirectLightingController.indirectDiffuseLightingMultiplier.value = multiplier;
+                        indirectLightingController.indirectDiffuseLightingMultiplier.Override(multiplier);
 
                         Log($"Indirect light intensity set to: {multiplier}.");
                     }
